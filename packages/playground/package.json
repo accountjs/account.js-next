@@ -1,0 +1,21 @@
+{
+  "name": "playground",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@accountjs/sdk": "workspace:*",
+    "eslint": "^8.32.0",
+    "eslint-config-custom": "workspace:*",
+    "ts-node": "^10.9.1",
+    "tsconfig": "workspace:*",
+    "typescript": "^4.9.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "ethers": "^5.7.2"
+  }
+}
