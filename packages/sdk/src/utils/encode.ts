@@ -1,8 +1,10 @@
 import { ethers } from 'ethers'
-import type { Deferrable, ParamType } from 'ethers/lib/utils'
 import { defaultAbiCoder, hexlify, keccak256, resolveProperties } from 'ethers/lib/utils'
-import { UserOperationStruct } from '@account-abstraction/contracts'
-import { PreVerificationOp } from './calcPreVerificationGas'
+import type { Deferrable, ParamType } from 'ethers/lib/utils'
+import type { UserOperationStruct } from '@account-abstraction/contracts'
+import { SimpleAccount__factory } from '@account-abstraction/contracts'
+import type { PreVerificationOp } from './calcPreVerificationGas'
+import type { NotPromise } from '../types'
 
 // UserOperation is the first parameter of validateUseOp
 const UserOpType = {
@@ -70,9 +72,26 @@ const UserOpType = {
 
 export const AddressZero = ethers.constants.AddressZero
 
-// reverse "Deferrable" or "PromiseOrValue" fields
-export type NotPromise<T> = {
-  [P in keyof T]: Exclude<T[P], Promise<any>>
+/**
+ * calculate the userOpHash of a given userOperation.
+ * The userOpHash is a hash of all UserOperation fields, except the "signature" field.
+ * The entryPoint uses this value in the emitted UserOperationEvent.
+ * A wallet may use this value as the hash to sign (the SampleWallet uses this method)
+ * @param op
+ * @param entryPoint
+ * @param chainId
+ */
+export function getUserOpHash(
+  op: NotPromise<UserOperationStruct>,
+  entryPoint: string,
+  chainId: number
+): string {
+  const userOpHash = keccak256(packUserOp(op, true))
+  const enc = defaultAbiCoder.encode(
+    ['bytes32', 'address', 'uint256'],
+    [userOpHash, entryPoint, chainId]
+  )
+  return keccak256(enc)
 }
 
 function encode(typevalues: Array<{ type: string; val: any }>, forSignature: boolean): string {
@@ -200,4 +219,20 @@ export function deepHexlify(obj: any): any {
 // (UserOpMethodHandler receives data from the network, so we need to pack our generated values)
 export async function resolveHexlify<T>(a: Readonly<Deferrable<T>>): Promise<T> {
   return deepHexlify(await resolveProperties(a))
+}
+
+export function isExecuteBatchTransaction(data: string) {
+  try {
+    const simpleAccountInterface = SimpleAccount__factory.createInterface()
+    const parsedTx = simpleAccountInterface.parseTransaction({ data })
+
+    return (
+      parsedTx.name === 'executeBatch' && parsedTx.signature === 'executeBatch(address[],bytes[])',
+      parsedTx.args.hasOwnProperty('dest') &&
+        parsedTx.args.hasOwnProperty('func') &&
+        Array.isArray(parsedTx.args)
+    )
+  } catch {
+    return false
+  }
 }

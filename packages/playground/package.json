@@ -4,6 +4,9 @@
   "private": true,
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "play": "ts-node ./config/run.ts"
+  },
   "devDependencies": {
     "@accountjs/sdk": "workspace:*",
     "eslint": "^8.32.0",
@@ -16,6 +19,7 @@
     "access": "public"
   },
   "dependencies": {
+    "abitype": "^0.6.8",
     "ethers": "^5.7.2"
   }
 }

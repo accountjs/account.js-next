@@ -1,7 +1,7 @@
-import { UserOperationStruct } from '@account-abstraction/contracts'
+import type { UserOperationStruct } from '@account-abstraction/contracts'
 import { arrayify, hexlify } from 'ethers/lib/utils'
-import { PartialBy } from '../types'
-import { NotPromise, packUserOp } from './encode'
+import type { NotPromise, PartialBy } from '../types'
+import { packUserOp } from './encode'
 
 export interface GasOverheads {
   /**

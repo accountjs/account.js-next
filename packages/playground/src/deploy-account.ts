@@ -1,5 +1,6 @@
 import { ethers } from 'ethers'
 import { AccountFactory } from '@accountjs/sdk'
+import { formatEther, parseEther } from 'ethers/lib/utils'
 
 // This file can be used to play around with the AccountJS SDK
 interface Config {
@@ -25,6 +26,7 @@ const config: typeof configExample = {
 async function main(): Promise<void> {
   const provider = new ethers.providers.JsonRpcProvider(config.RPC_URL)
   const deployerSigner = new ethers.Wallet(config.DEPLOYER_ADDRESS_PRIVATE_KEY, provider)
+  const deployerAddress = await deployerSigner.getAddress()
 
   // Create AccountFactory instance
   const accountFactory = await AccountFactory.create({ signer: deployerSigner })
@@ -37,8 +39,19 @@ async function main(): Promise<void> {
     signer: deployerSigner,
     salt: saltNonce
   })
-
-  console.log('Account:', account.address)
+  await deployerSigner.sendTransaction({
+    from: deployerAddress,
+    to: account.address,
+    value: parseEther('2')
+  })
+  const balance = await account.getBalance()
+  console.log('🚀 ~ file: account.test.ts:47 ~ it ~ balance:', formatEther(balance))
+  await account.executeTransaction({ to: deployerAddress, value: parseEther('1'), data: '0x' })
+  const balanceAfterExecute = await account.getBalance()
+  console.log(
+    '🚀 ~ file: deploy-account.ts:59 ~ main ~ balanceAfterExecute:',
+    formatEther(balanceAfterExecute)
+  )
 }
 
 main().catch((error) => {

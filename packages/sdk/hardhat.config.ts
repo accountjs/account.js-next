@@ -1,6 +1,6 @@
 import '@nomicfoundation/hardhat-toolbox'
 import 'hardhat-deploy'
-import { HardhatUserConfig, HttpNetworkUserConfig } from 'hardhat/types'
+import type { HardhatUserConfig, HttpNetworkUserConfig } from 'hardhat/types'
 import dotenv from 'dotenv'
 import yargs from 'yargs'
 
@@ -32,12 +32,19 @@ if (['goerli'].includes(argv.network) && INFURA_KEY === undefined) {
 
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
+  typechain: {
+    outDir: 'typechain',
+    target: 'ethers-v5'
+  },
   solidity: {
-    compilers: [{ version: '0.5.17' }, { version: '0.5.3' }, { version: '0.8.0' }]
+    version: '0.8.15',
+    settings: {
+      optimizer: { enabled: true }
+    }
   },
   paths: {
     artifacts: 'artifacts',
-    // deploy: 'hardhat/deploy',
+    deploy: 'hardhat/deploy',
     sources: 'contracts',
     tests: 'tests'
   },
@@ -97,12 +104,12 @@ const config: HardhatUserConfig = {
       ...sharedNetworkConfig,
       url: `https://goerli.infura.io/v3/${INFURA_KEY}`
     }
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0
+    }
   }
-  // namedAccounts: {
-  //   deployer: {
-  //     default: 0
-  //   }
-  // }
 }
 
 export default config

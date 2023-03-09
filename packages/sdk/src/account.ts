@@ -1,11 +1,12 @@
-import { BigNumber, BigNumberish, ethers } from 'ethers'
+import type { BigNumberish } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { hexConcat, resolveProperties } from 'ethers/lib/utils'
-import {
+import type {
   TransactionReceipt,
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider'
-import {
+import type {
   SimpleAccountFactory,
   SimpleAccount,
   EntryPoint,
@@ -14,11 +15,12 @@ import {
 import {
   getAccountFactoryContract,
   getAccountContract,
-  getEntryPointContract,
-  ACCOUNT_FACTORY_ADDRESS
+  getEntryPointContract
 } from './utils/getContracts'
-import { Address, ContractNetworkConfig } from './types'
-import { calcPreVerificationGas, PreVerificationOp } from './utils/calcPreVerificationGas'
+import type { Address, ContractNetworkConfig } from './types'
+import type { PreVerificationOp } from './utils/calcPreVerificationGas'
+import { calcPreVerificationGas } from './utils/calcPreVerificationGas'
+import { getUserOpHash } from './utils/encode'
 
 export interface PaymasterConfig {
   address: Address
@@ -49,9 +51,9 @@ export interface TransactionDetailsForUserOp {
 }
 
 export type ExecCallRequest = {
-  dest: string
-  value: BigNumberish
+  to: string
   data: string
+  value?: BigNumberish
 }
 
 export interface TransactionOptions {
@@ -69,12 +71,11 @@ export class Account {
   #accountContract!: SimpleAccount
   #entryPointContract!: EntryPoint
   #salt!: string
+  #isDeployed = false
 
   chainId!: number
   address!: Address
   isInitialized = false
-  isActivating = false
-  isDeployed = false
 
   static async create(config: CreateAccountConfig): Promise<Account> {
     const account = new Account()
@@ -83,21 +84,23 @@ export class Account {
   }
 
   private async init({ signer, salt, contractNetwork }: AccountInitConfig): Promise<void> {
-    signer._checkProvider()
+    if (!signer.provider) {
+      throw new Error('Signer must be connected to a provider')
+    }
     this.#signer = signer
-    this.#provider = signer.provider!
+    this.#provider = signer.provider
     this.#salt = salt ?? (Date.now() * 1000 + Math.floor(Math.random() * 1000)).toString()
     this.chainId = await this.#provider.getNetwork().then((network) => network.chainId)
 
     // Assign before _computeAddress access the contract address
     this.#accountFactoryContract = await getAccountFactoryContract({
-      provider: this.#provider,
+      signerOrProvider: signer,
       chainId: this.chainId,
       contractNetwork
     })
 
     this.#entryPointContract = await getEntryPointContract({
-      provider: this.#provider,
+      signerOrProvider: signer,
       chainId: this.chainId,
       contractNetwork
     })
@@ -108,7 +111,7 @@ export class Account {
     }
     this.address = address
     this.#accountContract = await getAccountContract({
-      provider: this.#provider,
+      signerOrProvider: signer,
       chainId: this.chainId,
       address
     })
@@ -140,43 +143,17 @@ export class Account {
     ])
   }
 
-  // TODO: Change to deploy
   async activateAccount(callback?: (tx: TransactionReceipt) => void): Promise<void> {
-    try {
-      this.isActivating = true
-      const accountAddress = this.address
-      const op = await this.createUnsignedUserOp({
-        target: accountAddress,
-        data: '0x',
-        value: 0,
-        gasLimit: 100000
-      })
-      // This won't work unless change to entry point
-      const tx = await this.#entryPointContract.handleOps([op], accountAddress)
-      const txReceipt = await tx.wait()
-      this.isDeployed = true
-      this.isActivating = false
-      callback?.(txReceipt)
-    } catch (e) {
-      this.isActivating = false
-      throw e
-    }
-  }
-
-  async getBatchExecutionTransaction(txs: TransactionRequest[]): Promise<string> {
-    const accountContract = this.#accountContract
-    const destinations = txs.map((tx) => tx.to ?? '')
-    const callDatas = txs.map((tx) => tx.data ?? '0x00')
-    return accountContract.interface.encodeFunctionData('executeBatch', [destinations, callDatas])
-  }
-
-  async getExecutionTransaction(
-    target: string,
-    value: BigNumberish,
-    data: string
-  ): Promise<string> {
-    const accountContract = this.#accountContract
-    return accountContract.interface.encodeFunctionData('execute', [target, value, data])
+    const op = await this.createUnsignedUserOp({
+      target: this.address,
+      data: '0x00',
+      value: 0
+    })
+    const signedOp = await this.signUserOp(op)
+    const beneficiary = await this.#signer.getAddress()
+    const tx = await this.#entryPointContract.handleOps([signedOp], beneficiary)
+    const txReceipt = await tx.wait()
+    callback?.(txReceipt)
   }
 
   /**
@@ -189,7 +166,34 @@ export class Account {
     return await this.#signer.signMessage(ethers.utils.arrayify(hash))
   }
 
+  /**
+   * return userOpHash for signing.
+   * This value matches entryPoint.getUserOpHash (calculated off-chain, to avoid a view call)
+   * @param userOp userOperation, (signature field ignored)
+   */
+  async getUserOpHash(userOp: UserOperationStruct): Promise<string> {
+    const op = await resolveProperties(userOp)
+    return getUserOpHash(op, this.#entryPointContract.address, this.chainId)
+  }
+
+  /**
+   * Sign the filled userOp.
+   * @param userOp the UserOperation to sign (with signature field ignored)
+   */
+  async signUserOp(userOp: UserOperationStruct): Promise<UserOperationStruct> {
+    const userOpHash = await this.getUserOpHash(userOp)
+    const signature = this.signTransactionHash(userOpHash)
+    return {
+      ...userOp,
+      signature
+    }
+  }
+
   async isAccountDeployed(): Promise<boolean> {
+    if (this.#isDeployed) {
+      return this.#isDeployed
+    }
+
     if (!this.#signer.provider) {
       throw new Error('SDK not initialized')
     }
@@ -199,16 +203,38 @@ export class Account {
     }
     const codeAtAddress = await this.#provider.getCode(address)
     const isDeployed = codeAtAddress !== '0x'
+    if (isDeployed) {
+      this.#isDeployed = true
+    }
     return isDeployed
   }
 
   /**
-   * Returns the Account nonce.
-   *
-   * @returns The Account nonce
+   * Returns the Account nonce number, return 0 when account has not deployed
+   * @returns The number of Account nonce
    */
   async getNonce(): Promise<number> {
-    return this.#accountContract.nonce().then((bn) => bn.toNumber())
+    return this.#accountContract
+      .nonce()
+      .then((bn) => bn.toNumber())
+      .catch(() => 0)
+  }
+
+  async requireDeployed() {
+    const isDeployed = await this.isAccountDeployed()
+    if (!isDeployed) {
+      throw new Error('Account not deployed')
+    }
+  }
+
+  /**
+   * Returns the owner of this Account.
+   *
+   * @returns The owner of this Account.
+   */
+  async getOwner(): Promise<string> {
+    await this.requireDeployed()
+    return this.#accountContract.owner({ gasLimit: 1e6 })
   }
 
   /**
@@ -238,6 +264,46 @@ export class Account {
     return 100000
   }
 
+  async estimateGas({ gasLimit, from, to, data }: TransactionRequest) {
+    if (gasLimit) {
+      return gasLimit
+    }
+    const estimatedGas = await this.#provider.estimateGas({ from, to, data })
+    return estimatedGas
+  }
+
+  /**
+   * helper method: create and sign a user operation.
+   * @param info transaction details for the userOp
+   */
+  async createSignedUserOp(info: TransactionDetailsForUserOp): Promise<UserOperationStruct> {
+    return await this.signUserOp(await this.createUnsignedUserOp(info))
+  }
+
+  private async _encodeOpCallData(info: TransactionDetailsForUserOp) {
+    const value = BigNumber.from(info.value ?? 0)
+
+    const callData = await this.encodeExecutionTransaction(info.target, value, info.data)
+    const callGasLimit = await this.estimateGas({
+      gasLimit: info.gasLimit,
+      from: this.#entryPointContract.address,
+      to: this.address,
+      data: callData
+    })
+    return { callData, callGasLimit }
+  }
+
+  private async _encodeOpInitCallData() {
+    const initCode = await this.encodeInitCode()
+    const initGas = await this.estimateGas({
+      from: this.#entryPointContract.address,
+      to: this.#accountFactoryContract.address,
+      data: '0x' + initCode.slice(42)
+    })
+
+    return { initCode, initGas }
+  }
+
   /**
    * create a UserOperation, filling all details (except signature)
    * - if account is not yet created, add initCode to deploy it.
@@ -245,22 +311,9 @@ export class Account {
    * @param info
    */
   async createUnsignedUserOp(info: TransactionDetailsForUserOp): Promise<UserOperationStruct> {
-    const value = BigNumber.from(info.value ?? 0)
-    const callData = await this.getExecutionTransaction(info.target, value, info.data)
-    const callGasLimit = info.gasLimit
-      ? BigNumber.from(info.gasLimit)
-      : await this.#provider.estimateGas({
-          from: this.#entryPointContract.address,
-          to: this.address,
-          data: callData
-        })
+    const { callData, callGasLimit } = await this._encodeOpCallData(info)
+    const { initCode, initGas } = await this._encodeOpInitCallData()
 
-    const initCode = await this.encodeInitCode()
-
-    const initGas = await this.#provider.estimateGas({
-      to: this.#accountFactoryContract.address,
-      data: '0x' + initCode.slice(42)
-    })
     const verificationGasLimit = BigNumber.from(1e5).add(initGas)
 
     let { maxFeePerGas, maxPriorityFeePerGas } = info
@@ -283,26 +336,31 @@ export class Account {
       verificationGasLimit,
       maxFeePerGas,
       maxPriorityFeePerGas,
+      // TODO: Add paymaster support
       paymasterAndData: '0x'
     }
-
     const op = (await resolveProperties(partialUserOp)) as PreVerificationOp
-
-    // let paymasterAndData: string | undefined
-    // if (this.paymasterAPI != null) {
-    //   // fill (partial) preVerificationGas (all except the cost of the generated paymasterAndData)
-    //   const userOpForPm = {
-    //     ...partialUserOp,
-    //     preVerificationGas: await this.getPreVerificationGas(partialUserOp)
-    //   }
-    //   paymasterAndData = await this.paymasterAPI.getPaymasterAndData(userOpForPm)
-    // }
-    // partialUserOp.paymasterAndData = paymasterAndData ?? '0x'
     return {
       ...partialUserOp,
       preVerificationGas: calcPreVerificationGas(op),
       signature: ''
     } as UserOperationStruct
+  }
+
+  async encodeBatchExecutionTransaction(txs: TransactionRequest[]): Promise<string> {
+    const accountContract = this.#accountContract
+    const destinations = txs.map((tx) => tx.to ?? '')
+    const callDatas = txs.map((tx) => tx.data ?? '0x00')
+    return accountContract.interface.encodeFunctionData('executeBatch', [destinations, callDatas])
+  }
+
+  async encodeExecutionTransaction(
+    target: string,
+    value: BigNumberish,
+    data: string
+  ): Promise<string> {
+    const accountContract = this.#accountContract
+    return accountContract.interface.encodeFunctionData('execute', [target, value, data])
   }
 
   /**
@@ -316,28 +374,52 @@ export class Account {
    * @throws "Cannot specify gas and gasLimit together in transaction options"
    */
   async executeTransaction(
-    { value, dest, data }: ExecCallRequest,
+    { value, to, data }: ExecCallRequest,
     options?: TransactionOptions
   ): Promise<TransactionResponse> {
-    const bValue = BigNumber.from(value)
-    if (!bValue.isZero()) {
+    await this.requireDeployed()
+
+    const bigValue = BigNumber.from(value ?? 0)
+    if (!bigValue.isZero()) {
       const balance = await this.getBalance()
-      if (bValue.gt(BigNumber.from(balance))) {
+      if (bigValue.gt(balance)) {
         throw new Error('Not enough Ether funds')
       }
     }
+    if (options?.gas && options?.gasLimit) {
+      throw new Error('Cannot specify gas and gasLimit together in transaction options')
+    }
+
+    return await this.#accountContract.execute(to, bigValue, data, {
+      ...options
+    })
+  }
+
+  /**
+   * Executes a batch transaction.
+   *
+   * @param CallRequest - The transaction to execute
+   * @param options - The transaction execution options. Optional
+   * @returns The transaction response
+   * @throws "No signature provided"
+   * @throws "Not enough Ether funds"
+   * @throws "Cannot specify gas and gasLimit together in transaction options"
+   */
+  async executeBatchTransaction(
+    txs: ExecCallRequest[],
+    options?: TransactionOptions
+  ): Promise<TransactionResponse> {
+    await this.requireDeployed()
 
     if (options?.gas && options?.gasLimit) {
       throw new Error('Cannot specify gas and gasLimit together in transaction options')
     }
 
-    const op = await this.createUnsignedUserOp({
-      ...options,
-      target: dest,
-      data
-    })
+    const destinations = txs.map((tx) => tx.to ?? '')
+    const callDatas = txs.map((tx) => tx.data ?? '0x00')
 
-    const txResponse = await this.#entryPointContract.estimateGas.handleOps([op], this.address)
-    // return txResponse
+    return await this.#accountContract.executeBatch(destinations, callDatas, {
+      ...options
+    })
   }
 }

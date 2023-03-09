@@ -1,4 +1,5 @@
 import { ethers } from 'ethers'
+import { erc20Abi } from 'abitype/test'
 import { AccountFactory } from '../../sdk/dist/src'
 
 // This file can be used to play around with the AccountJS SDK
@@ -23,62 +24,11 @@ const config: typeof configExample = {
   TOKEN_ADDRESS: '0x0f7a41bc01b661847d07077168c439abff37db8d'
 }
 
-const erc20ABI = [
-  {
-    type: 'function',
-    name: 'balanceOf',
-    stateMutability: 'view',
-    inputs: [
-      {
-        name: 'account',
-        type: 'address'
-      }
-    ],
-    outputs: [{ type: 'uint256' }]
-  },
-  {
-    type: 'function',
-    name: 'approve',
-    stateMutability: 'nonpayable',
-    inputs: [
-      {
-        name: 'spender',
-        type: 'address'
-      },
-      {
-        name: 'amount',
-        type: 'uint256'
-      }
-    ],
-    outputs: [{ type: 'bool' }]
-  },
-  {
-    type: 'function',
-    name: 'transferFrom',
-    stateMutability: 'nonpayable',
-    inputs: [
-      {
-        name: 'sender',
-        type: 'address'
-      },
-      {
-        name: 'recipient',
-        type: 'address'
-      },
-      {
-        name: 'amount',
-        type: 'uint256'
-      }
-    ],
-    outputs: [{ type: 'bool' }]
-  }
-]
-
 async function main(): Promise<void> {
   const provider = new ethers.providers.JsonRpcProvider(config.RPC_URL)
   const deployerSigner = new ethers.Wallet(config.DEPLOYER_ADDRESS_PRIVATE_KEY, provider)
   const tokenAddress = config.TOKEN_ADDRESS
-  const token = new ethers.Contract(tokenAddress, erc20ABI)
+  const token = new ethers.Contract(tokenAddress, erc20Abi)
 
   // Create AccountFactory instance
   const accountFactory = await AccountFactory.create({ signer: deployerSigner })
@@ -115,9 +65,9 @@ async function main(): Promise<void> {
       transferAmount
     ])
   }
-  const batchTxData = await account1.getBatchExecutionTransaction([tx1, tx2])
+  const batchTxData = await account1.encodeBatchExecutionTransaction([tx1, tx2])
   await account1.executeTransaction({
-    dest: tokenAddress,
+    to: tokenAddress,
     data: batchTxData,
     value: 0
   })

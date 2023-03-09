@@ -1,7 +1,8 @@
-import { ethers } from 'ethers'
-import { SimpleAccountFactory } from '@account-abstraction/contracts'
+import type { ethers } from 'ethers'
+import type { SimpleAccountFactory } from '@account-abstraction/contracts'
 import { getAccountFactoryContract } from './utils/getContracts'
-import { Account, CreateAccountConfig } from './account'
+import type { CreateAccountConfig } from './account'
+import { Account } from './account'
 
 interface AccountFactoryInitConfig {
   signer: ethers.Signer
@@ -23,7 +24,10 @@ export class AccountFactory {
     this.#signer = signer
     const chainId = await signer.provider!.getNetwork().then((nw) => nw.chainId)
     this.#chainId = chainId
-    this.#factoryContract = await getAccountFactoryContract({ provider: signer.provider!, chainId })
+    this.#factoryContract = await getAccountFactoryContract({
+      signerOrProvider: signer.provider!,
+      chainId
+    })
   }
 
   getAddress() {

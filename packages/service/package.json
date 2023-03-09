@@ -1,0 +1,12 @@
+{
+  "name": "@accountjs/service-client",
+  "version": "0.0.1",
+  "description": "Account.js Service Client",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "eslint-config-custom": "workspace:*",
+    "tsconfig": "workspace:*"
+  }
+}
