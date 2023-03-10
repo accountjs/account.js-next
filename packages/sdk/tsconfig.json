@@ -6,7 +6,8 @@
   "extends": "tsconfig/node14.json",
   "include": [
     "src",
-    "src/**/*.json"
+    "src/**/*.json",
+    "types"
   ],
   "exclude": [
     "dist",

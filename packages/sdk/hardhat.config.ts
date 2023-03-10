@@ -33,7 +33,7 @@ if (['goerli'].includes(argv.network) && INFURA_KEY === undefined) {
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   typechain: {
-    outDir: 'typechain',
+    outDir: 'types',
     target: 'ethers-v5'
   },
   solidity: {
