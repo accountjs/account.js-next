@@ -1,6 +1,14 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/accountjs" },
+    {
+      "path": "packages/sdk",
+    },
+    {
+      "path": "packages/service",
+    },
+    {
+      "path": "packages/playground",
+    },
   ]
 }
