@@ -1,7 +1,7 @@
-import { expect } from 'chai'
-import { parseEther } from 'ethers/lib/utils'
 import { deployments, ethers } from 'hardhat'
-import { CheckBalance__factory } from '../typechain/factories/contracts/tests/CheckBalance__factory'
+import { parseEther } from 'ethers/lib/utils'
+import { expect } from 'chai'
+import { CheckBalance__factory } from '../types'
 
 describe('CheckBalance Contract', () => {
   it('emit with checked balance', async () => {

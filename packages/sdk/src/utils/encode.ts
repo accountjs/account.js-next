@@ -2,9 +2,9 @@ import { ethers } from 'ethers'
 import { defaultAbiCoder, hexlify, keccak256, resolveProperties } from 'ethers/lib/utils'
 import type { Deferrable, ParamType } from 'ethers/lib/utils'
 import type { UserOperationStruct } from '@account-abstraction/contracts'
-import { SimpleAccount__factory } from '@account-abstraction/contracts'
 import type { PreVerificationOp } from './calcPreVerificationGas'
 import type { NotPromise } from '../types'
+import { Account__factory } from '../../types'
 
 // UserOperation is the first parameter of validateUseOp
 const UserOpType = {
@@ -223,7 +223,7 @@ export async function resolveHexlify<T>(a: Readonly<Deferrable<T>>): Promise<T> 
 
 export function isExecuteBatchTransaction(data: string) {
   try {
-    const simpleAccountInterface = SimpleAccount__factory.createInterface()
+    const simpleAccountInterface = Account__factory.createInterface()
     const parsedTx = simpleAccountInterface.parseTransaction({ data })
 
     return (

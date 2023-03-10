@@ -1,51 +1,42 @@
-import type {
-  SimpleAccountFactory,
-  SimpleAccount,
-  EntryPoint
-} from '@account-abstraction/contracts'
-import {
-  SimpleAccountFactory__factory,
-  SimpleAccount__factory,
-  EntryPoint__factory
-} from '@account-abstraction/contracts'
 import type { ethers } from 'ethers'
-import type { ContractNetworkConfig } from '../types'
+import type { ContractConfig } from '../types'
+import { CONTRACTS } from '../constants'
+import type { EntryPoint, Account, AccountFactory } from '../../types'
+import { EntryPoint__factory, Account__factory, AccountFactory__factory } from '../../types'
 
 export interface BaseGetContractProps {
   signerOrProvider: ethers.Signer | ethers.providers.Provider
   chainId: number
-  contractNetwork?: ContractNetworkConfig
+  customContracts?: ContractConfig
 }
 
 export interface GetAccountContractProps extends BaseGetContractProps {
   address: string
 }
 
-export const ACCOUNT_FACTORY_ADDRESS = '0x7192244743491fcb3f8f682d57ab6e9e1f41de6e'
 export async function getAccountFactoryContract({
   signerOrProvider,
-  contractNetwork
-}: BaseGetContractProps): Promise<SimpleAccountFactory> {
-  return SimpleAccountFactory__factory.connect(
-    contractNetwork?.accountFactoryAddress ?? ACCOUNT_FACTORY_ADDRESS,
+  customContracts
+}: BaseGetContractProps): Promise<AccountFactory> {
+  return AccountFactory__factory.connect(
+    customContracts?.accountFactoryAddress ?? CONTRACTS.accountFactoryAddress,
     signerOrProvider
   )
 }
 
 export async function getAccountContract({
-  signerOrProvider: provider,
+  signerOrProvider,
   address
-}: GetAccountContractProps): Promise<SimpleAccount> {
-  return SimpleAccount__factory.connect(address, provider)
+}: GetAccountContractProps): Promise<Account> {
+  return Account__factory.connect(address, signerOrProvider)
 }
 
-const ENTRY_POINT_ADDRESS = '0x0576a174D229E3cFA37253523E645A78A0C91B57'
 export async function getEntryPointContract({
   signerOrProvider,
-  contractNetwork
+  customContracts
 }: BaseGetContractProps): Promise<EntryPoint> {
   return EntryPoint__factory.connect(
-    contractNetwork?.entryPointAddress ?? ENTRY_POINT_ADDRESS,
+    customContracts?.entryPointAddress ?? CONTRACTS.entryPointAddress,
     signerOrProvider
   )
 }
