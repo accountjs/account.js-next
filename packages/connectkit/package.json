@@ -1,0 +1,46 @@
+{
+  "name": "@accountjs/connect",
+  "version": "0.0.1",
+  "description": "Account.js Connect Kit",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "build": "node build.js",
+    "build:watch": "node build.js --watch",
+    "dev": "pnpm build:watch & pnpm typegen:watch",
+    "prepare": "pnpm build",
+    "prebuild": "pnpm typegen",
+    "typecheck": "pnpm tsc --noEmit",
+    "typegen": "tsc --emitDeclarationOnly || true",
+    "typegen:watch": "tsc --emitDeclarationOnly --watch"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "ethers": ">=5.5.1 < 6",
+    "react": ">=17",
+    "react-dom": ">=17",
+    "wagmi": "0.12.x"
+  },
+  "dependencies": {
+    "@accountjs/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "esbuild": "^0.17.11",
+    "eslint-config-custom": "workspace:*",
+    "tsconfig": "workspace:*",
+    "tsup": "^6.6.3",
+    "vite": "^4.1.4",
+    "vite-plugin-dts": "^2.1.0",
+    "vite-tsconfig-paths": "^4.0.5"
+  },
+  "resolutions": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "wagmi": "^0.12.0"
+  }
+}
