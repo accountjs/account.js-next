@@ -1,25 +1,18 @@
 import { BigNumber, ethers } from 'ethers'
 import { resolveProperties } from 'ethers/lib/utils'
 import type { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
-import type { UserOperationStruct } from '@account-abstraction/contracts'
 import type {
-  Account as AccountContract,
-  AccountFactory as AccountFactoryContract,
-  EntryPoint as EntryPointContract
-} from '../types'
+  UserOperationStruct,
+  EntryPoint as EntryPointContract,
+  SimpleAccountFactory as SimpleAccountFactoryContract,
+  SimpleAccount as SimpleAccountContract
+} from '@account-abstraction/contracts'
 import {
   getAccountFactoryContract,
   getAccountContract,
   getEntryPointContract
 } from './utils/getContracts'
-import type {
-  AccountInitConfig,
-  Address,
-  CreateAccountConfig,
-  ExecCallRequest,
-  TransactionDetailsForUserOp,
-  TransactionOptions
-} from './types'
+import type { Address } from './types/helpers'
 import type { PreVerificationOp } from './utils/calcPreVerificationGas'
 import { calcPreVerificationGas } from './utils/calcPreVerificationGas'
 import { getUserOpHash } from './utils/encode'
@@ -29,14 +22,23 @@ import {
   encodeFactoryCreateAccountCode,
   getPriorityFee
 } from './utils/contract'
+import { ACCOUNTJS_CONSTANT_SALT } from './constants'
+import type {
+  CreateAccountConfig,
+  AccountInitConfig,
+  TransactionDetailsForUserOp,
+  ExecCallRequest,
+  TransactionOptions
+} from './types/account'
 
 export class Account {
   #provider!: ethers.providers.Provider
   #signer!: ethers.Signer
   #chainId!: number
-  #accountFactoryContract!: AccountFactoryContract
-  #accountContract!: AccountContract
+  #accountFactoryContract!: SimpleAccountFactoryContract
+  #accountContract!: SimpleAccountContract
   #entryPointContract!: EntryPointContract
+  #identitySalt!: string
 
   static async create(config: CreateAccountConfig): Promise<Account> {
     const account = new Account()
@@ -66,10 +68,10 @@ export class Account {
       chainId: this.#chainId,
       customContracts
     })
-    const identitySalt = salt ?? (Date.now() * 1000 + Math.floor(Math.random() * 1000)).toString()
+    this.#identitySalt = salt ?? ACCOUNTJS_CONSTANT_SALT
     const address =
       accountAddress ??
-      (await calculateAccountAddress(this.#accountFactoryContract, identitySalt, signer))
+      (await calculateAccountAddress(this.#accountFactoryContract, this.#identitySalt, signer))
     this.#accountContract = await getAccountContract({
       signerOrProvider: signer,
       chainId: this.#chainId,
@@ -152,7 +154,7 @@ export class Account {
       : encodeFactoryCreateAccountCode(
           this.#accountFactoryContract.address,
           await this.#signer.getAddress(),
-          'salt'
+          this.#identitySalt
         )
 
     const initGas =

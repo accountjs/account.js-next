@@ -1,19 +1,21 @@
 import { deployments, ethers } from 'hardhat'
 import { expect } from 'chai'
 import { AccountFactory } from '../src'
-import { EntryPoint__factory, AccountFactory__factory } from '../types'
 import { calculateAccountAddress } from '../src/utils/address'
+import { getAccountFactory, getEntryPoint } from './utils/setupContracts'
 
 describe('AccountFactory', () => {
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
     const accounts = await ethers.provider.listAccounts()
     const signer = ethers.provider.getSigner()
-    const entryPoint = await new EntryPoint__factory(signer).deploy()
-    const simpleAccountFactory = await new AccountFactory__factory(signer).deploy(
-      entryPoint.address
-    )
-    return { accounts, signer, entryPoint, simpleAccountFactory }
+
+    return {
+      accounts,
+      signer,
+      entryPoint: (await getEntryPoint()).contract,
+      simpleAccountFactory: (await getAccountFactory()).contract
+    }
   })
 
   it('initialize with factory contract address', async () => {
@@ -33,7 +35,7 @@ describe('AccountFactory', () => {
     })
 
     const salt = '123'
-    const account = await accountFactory.deployAccount(salt)
+    const account = await accountFactory.deployAccount({ salt })
     expect(account.getAddress()).to.be.a.string
     const predicatedAddress = await calculateAccountAddress(simpleAccountFactory, salt, signer)
     expect(predicatedAddress).to.be.deep.eq(account.getAddress())

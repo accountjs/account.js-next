@@ -10,18 +10,11 @@ interface Config {
   TOKEN_ADDRESS: string
 }
 
-const configExample: Config = {
+const config: Config = {
   RPC_URL: 'https://goerli.infura.io/v3/<INFURA_KEY>',
   DEPLOYER_ADDRESS_PRIVATE_KEY: '<DEPLOYER_PRIVATE_KEY>',
   SALT_NONCE: '<SALT_NONCE_NUMBER>',
   TOKEN_ADDRESS: '<TOKEN_ADDRESS>'
-}
-
-const config: typeof configExample = {
-  RPC_URL: 'http://localhost:8545',
-  DEPLOYER_ADDRESS_PRIVATE_KEY:
-    '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-  TOKEN_ADDRESS: '0x0f7a41bc01b661847d07077168c439abff37db8d'
 }
 
 async function main(): Promise<void> {
@@ -34,43 +27,43 @@ async function main(): Promise<void> {
   const accountFactory = await AccountFactory.create({ signer: deployerSigner })
 
   // Create account
-  const account1 = await accountFactory.createAccount({
-    signer: deployerSigner,
+  const aliceAccount = await accountFactory.deployAccount({
     salt: ethers.utils.id('1')
   })
-  const account2 = await accountFactory.createAccount({
-    signer: deployerSigner,
+  const bobAccount = await accountFactory.deployAccount({
     salt: ethers.utils.id('2')
   })
+  const acliceAddress = aliceAccount.getAddress()
+  const bobAddress = aliceAccount.getAddress()
 
-  const balance1 = await token.balanceOf(account1.address)
-  const balance2 = await token.balanceOf(account2.address)
-  console.log('Account1:', account1.address)
-  console.log('Balance:', ethers.utils.formatEther(balance1))
+  const bobBalance = await token.balanceOf(bobAddress)
+  const aliceBalance = await token.balanceOf(acliceAddress)
+  console.log('bob:', bobAddress)
+  console.log('bob balance:', ethers.utils.formatEther(bobBalance))
   console.log('---')
-  console.log('Account2:', account2.address)
-  console.log('Balance:', ethers.utils.formatEther(balance2))
+  console.log('alice:', acliceAddress)
+  console.log('alice balance:', ethers.utils.formatEther(aliceBalance))
 
   const transferAmount = ethers.utils.parseEther('1')
-  // Execute approve and transfer
-  const tx1 = {
+  // Execute mint, approve and transfer
+  const mintTokenTx = {
     to: tokenAddress,
-    data: token.interface.encodeFunctionData('approve', [account2.address, transferAmount])
+    data: token.interface.encodeFunctionData('mint', [bobAddress, transferAmount])
   }
-  const tx2 = {
+  const bobForAliceTokenApprovalTx = {
+    to: tokenAddress,
+    data: token.interface.encodeFunctionData('approve', [acliceAddress, transferAmount])
+  }
+  const transferFromBobToAliceTx = {
     to: tokenAddress,
     data: token.interface.encodeFunctionData('transferFrom', [
-      account1.address,
-      account2.address,
+      bobAddress,
+      acliceAddress,
       transferAmount
     ])
   }
-  const batchTxData = await account1.encodeBatchExecutionTransaction([tx1, tx2])
-  await account1.executeTransaction({
-    to: tokenAddress,
-    data: batchTxData,
-    value: 0
-  })
+  await aliceAccount.executeBatchTransaction([mintTokenTx, bobForAliceTokenApprovalTx])
+  await bobAccount.executeTransaction(transferFromBobToAliceTx)
 }
 
 main().catch((error) => {

@@ -1,19 +1,25 @@
 import type { ethers } from 'ethers'
-import type { AccountFactory as AccountFactoryContract } from '../types'
-import type { ContractConfig } from './types'
+import type { TransactionReceipt } from '@ethersproject/abstract-provider'
+import type { SimpleAccountFactory as SimpleAccountFactoryContract } from '@account-abstraction/contracts'
 import { getAccountFactoryContract } from './utils/getContracts'
 import { Account } from './account'
 import { calculateAccountAddress } from './utils/address'
+import type { ContractConfig } from './types/contract'
 
 interface AccountFactoryInitConfig {
   signer: ethers.Signer
   customContracts?: ContractConfig
 }
 
+interface AccountDeployConfig {
+  salt?: string
+  callback?: (txHash: TransactionReceipt) => void
+}
+
 export class AccountFactory {
   #signer!: ethers.Signer
   #provider!: ethers.providers.Provider
-  #factoryContract!: AccountFactoryContract
+  #factoryContract!: SimpleAccountFactoryContract
   #customContracts?: ContractConfig
 
   static async create(config: AccountFactoryInitConfig): Promise<AccountFactory> {
@@ -50,14 +56,17 @@ export class AccountFactory {
     return calculateAccountAddress(this.#factoryContract, salt, this.#signer)
   }
 
-  async deployAccount(salt?: string) {
+  async deployAccount({ salt, callback }: AccountDeployConfig) {
     const signerAddress = await this.#signer.getAddress()
     if (!signerAddress) {
       throw new Error('Provider must be initialized with a signer to use this method')
     }
     const identitySalt = salt ?? (Date.now() * 1000 + Math.floor(Math.random() * 1000)).toString()
-    // Wait until contract deployed
-    await this.#factoryContract.createAccount(signerAddress, identitySalt).then((tx) => tx.wait())
+    const transactionReceipt = await this.#factoryContract
+      .createAccount(signerAddress, identitySalt)
+      .then((tx) => tx.wait())
+    callback?.(transactionReceipt)
+
     const accountAddress = await this.predictAccountAddress(identitySalt)
     const isContractDeployed = await this.#provider
       .getCode(accountAddress)

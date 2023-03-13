@@ -41,12 +41,6 @@ contract AccountFactory {
         );
     }
 
-    /// @dev Allows to retrieve the creation code used for the Proxy deployment.
-    // With this it is easily possible to calculate predicted address.
-    function getCreationCode() public pure returns (bytes memory) {
-        return type(ERC1967Proxy).creationCode;
-    }
-
     /**
      * calculate the counterfactual address of this account as it would be returned by createAccount()
      */

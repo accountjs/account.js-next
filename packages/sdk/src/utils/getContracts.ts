@@ -1,8 +1,16 @@
 import type { ethers } from 'ethers'
-import type { ContractConfig } from '../types'
+import type {
+  EntryPoint,
+  SimpleAccount,
+  SimpleAccountFactory
+} from '@account-abstraction/contracts'
+import {
+  EntryPoint__factory,
+  SimpleAccount__factory,
+  SimpleAccountFactory__factory
+} from '@account-abstraction/contracts'
 import { CONTRACTS } from '../constants'
-import type { EntryPoint, Account, AccountFactory } from '../../types'
-import { EntryPoint__factory, Account__factory, AccountFactory__factory } from '../../types'
+import type { ContractConfig } from '../types/contract'
 
 export interface BaseGetContractProps {
   signerOrProvider: ethers.Signer | ethers.providers.Provider
@@ -17,8 +25,8 @@ export interface GetAccountContractProps extends BaseGetContractProps {
 export async function getAccountFactoryContract({
   signerOrProvider,
   customContracts
-}: BaseGetContractProps): Promise<AccountFactory> {
-  return AccountFactory__factory.connect(
+}: BaseGetContractProps): Promise<SimpleAccountFactory> {
+  return SimpleAccountFactory__factory.connect(
     customContracts?.accountFactoryAddress ?? CONTRACTS.accountFactoryAddress,
     signerOrProvider
   )
@@ -27,8 +35,8 @@ export async function getAccountFactoryContract({
 export async function getAccountContract({
   signerOrProvider,
   address
-}: GetAccountContractProps): Promise<Account> {
-  return Account__factory.connect(address, signerOrProvider)
+}: GetAccountContractProps): Promise<SimpleAccount> {
+  return SimpleAccount__factory.connect(address, signerOrProvider)
 }
 
 export async function getEntryPointContract({

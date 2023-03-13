@@ -1,7 +1,10 @@
 import type { Provider, TransactionRequest } from '@ethersproject/providers'
 import type { BigNumberish } from 'ethers'
 import { hexConcat } from 'ethers/lib/utils'
-import { Account__factory, AccountFactory__factory } from '../../types'
+import {
+  SimpleAccount__factory,
+  SimpleAccountFactory__factory
+} from '@account-abstraction/contracts'
 
 export const encodeFactoryCreateAccountCode = (
   factoryAddress: string,
@@ -10,11 +13,14 @@ export const encodeFactoryCreateAccountCode = (
 ): string => {
   return hexConcat([
     factoryAddress,
-    AccountFactory__factory.createInterface().encodeFunctionData('createAccount', [owner, salt])
+    SimpleAccountFactory__factory.createInterface().encodeFunctionData('createAccount', [
+      owner,
+      salt
+    ])
   ])
 }
 
-const accountInterface = Account__factory.createInterface()
+const accountInterface = SimpleAccount__factory.createInterface()
 
 export const encodeExecutionTransaction = (
   target: string,

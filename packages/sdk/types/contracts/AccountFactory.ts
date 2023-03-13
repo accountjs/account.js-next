@@ -28,7 +28,6 @@ export interface AccountFactoryInterface extends utils.Interface {
     "accountImplementation()": FunctionFragment;
     "createAccount(address,uint256)": FunctionFragment;
     "getAddress(address,uint256)": FunctionFragment;
-    "getCreationCode()": FunctionFragment;
   };
 
   getFunction(
@@ -36,7 +35,6 @@ export interface AccountFactoryInterface extends utils.Interface {
       | "accountImplementation"
       | "createAccount"
       | "getAddress"
-      | "getCreationCode"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -51,10 +49,6 @@ export interface AccountFactoryInterface extends utils.Interface {
     functionFragment: "getAddress",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "getCreationCode",
-    values?: undefined
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "accountImplementation",
@@ -65,10 +59,6 @@ export interface AccountFactoryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getAddress", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getCreationCode",
-    data: BytesLike
-  ): Result;
 
   events: {};
 }
@@ -113,8 +103,6 @@ export interface AccountFactory extends BaseContract {
       salt: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    getCreationCode(overrides?: CallOverrides): Promise<[string]>;
   };
 
   accountImplementation(overrides?: CallOverrides): Promise<string>;
@@ -131,8 +119,6 @@ export interface AccountFactory extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getCreationCode(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
     accountImplementation(overrides?: CallOverrides): Promise<string>;
 
@@ -147,8 +133,6 @@ export interface AccountFactory extends BaseContract {
       salt: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    getCreationCode(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {};
@@ -167,8 +151,6 @@ export interface AccountFactory extends BaseContract {
       salt: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    getCreationCode(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -187,7 +169,5 @@ export interface AccountFactory extends BaseContract {
       salt: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    getCreationCode(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

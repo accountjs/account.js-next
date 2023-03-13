@@ -1,15 +1,16 @@
 import { deployments, ethers } from 'hardhat'
 import { expect } from 'chai'
 import { defaultAbiCoder } from 'ethers/lib/utils'
-import { EntryPoint__factory } from '@account-abstraction/contracts'
 import { TestAccountFactory__factory, Account__factory } from '../types'
+import { getEntryPoint } from './utils/setupContracts'
 
 describe('TestAccountFactory Contract', () => {
   const setupTests = deployments.createFixture(async ({ deployments }) => {
     await deployments.fixture()
     const accounts = await ethers.provider.listAccounts()
     const signer = ethers.provider.getSigner()
-    const entryPoint = await new EntryPoint__factory(signer).deploy()
+
+    const entryPoint = (await getEntryPoint()).contract
     const testAccountFactory = await new TestAccountFactory__factory(signer).deploy(
       entryPoint.address
     )

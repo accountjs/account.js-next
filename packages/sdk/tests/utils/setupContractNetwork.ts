@@ -1,4 +1,4 @@
-import type { ContractConfig } from '../../src'
+import type { ContractConfig } from '../../src/types/contract'
 import { getAccountFactory, getEntryPoint } from './setupContracts'
 
 export async function getContractNetwork(): Promise<ContractConfig> {

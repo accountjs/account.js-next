@@ -1,18 +1,18 @@
 import { deployments, ethers } from 'hardhat'
 import type { AbiItem } from 'web3-utils'
+import type { SimpleAccountFactory, EntryPoint } from '@account-abstraction/contracts'
 import { accountFactoryDeployed, entryPointDeployed } from '../../hardhat/deploy/deploy-contracts'
-import type { AccountFactory, EntryPoint } from '../../types'
 import { rethrow } from './error'
 
 export const getAccountFactory = async (): Promise<{
-  contract: AccountFactory
+  contract: SimpleAccountFactory
   abi: AbiItem | AbiItem[]
 }> => {
   const AccountDeployment = await deployments.get(accountFactoryDeployed.name)
-  const AccountFactory = await ethers.getContractFactory(accountFactoryDeployed.name)
+  const SimpleAccountFactory = await ethers.getContractFactory(accountFactoryDeployed.name)
 
   return {
-    contract: AccountFactory.attach(AccountDeployment.address) as AccountFactory,
+    contract: SimpleAccountFactory.attach(AccountDeployment.address) as SimpleAccountFactory,
     abi: AccountDeployment.abi
   }
 }
@@ -27,12 +27,13 @@ export const getEntryPoint = async (): Promise<{
   const contract = EntryPointFactory.attach(EntryPointDeployment.address) as EntryPoint
 
   return {
-    contract: Object.assign(contract, {
+    contract: {
+      ...contract,
       // Rewrite handleOps with custom error throw
       handleOps(...args: Parameters<EntryPoint['handleOps']>) {
         return contract.handleOps(...args).catch(rethrow())
       }
-    }),
+    } as EntryPoint,
     abi: EntryPointDeployment.abi
   }
 }

@@ -1,31 +1,31 @@
 import type { Signer } from 'ethers'
 import { ethers } from 'ethers'
 import { defaultAbiCoder } from 'ethers/lib/utils'
-import type { AccountFactory as AccountFactoryContract } from '../../types'
-import { Account__factory } from '../../types'
-import type { Address } from '../types'
+import type { SimpleAccountFactory as SimpleAccountFactoryContract } from '@account-abstraction/contracts'
+import { SimpleAccount__factory } from '@account-abstraction/contracts'
+import { bytecode as ERC1967ProxyCreationCode } from '@openzeppelin/contracts/build/contracts/ERC1967Proxy.json'
+import type { Address } from '../types/helpers'
 
 async function getAccountCreate2Elements(
-  accountFactoryContract: AccountFactoryContract,
+  accountFactoryContract: SimpleAccountFactoryContract,
   salt: string,
   signer: Signer
 ) {
   const factoryAddress = accountFactoryContract.address
   const signerAddress = await signer.getAddress()
   const implementation = await accountFactoryContract.accountImplementation()
-  const proxyCreationCode = await accountFactoryContract.getCreationCode()
 
   const bytes32Salt = ethers.utils.solidityPack(['uint256'], [salt])
   const initData = defaultAbiCoder.encode(
     ['address', 'bytes'],
     [
       implementation,
-      Account__factory.createInterface().encodeFunctionData('initialize', [signerAddress])
+      SimpleAccount__factory.createInterface().encodeFunctionData('initialize', [signerAddress])
     ]
   )
   const deploymentCode = ethers.utils.solidityPack(
     ['bytes', 'bytes'],
-    [proxyCreationCode, initData]
+    [ERC1967ProxyCreationCode, initData]
   )
   const keccak256DeploymentCode = ethers.utils.keccak256(deploymentCode)
 
@@ -37,7 +37,7 @@ async function getAccountCreate2Elements(
 }
 
 export async function calculateAccountAddress(
-  accountFactoryContract: AccountFactoryContract,
+  accountFactoryContract: SimpleAccountFactoryContract,
   salt: string,
   signer: Signer
 ): Promise<Address> {

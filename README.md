@@ -1,6 +1,6 @@
-# Account.js SDK Monorepo
+# Account.js
 
-Software developer kit that helps your to build with account abstraction contracts and services.
+Unified Account Abstraction SDK & Tools for DAPP Developers.
 
 ## Packages
 
