@@ -6,7 +6,7 @@ Unified Account Abstraction SDK & Tools for DAPP Developers.
 
 | Package | Description |
 | ------- | ----------- |
-| [accountjs-sdk](https://github.com/accountjs/account.js-next/tree/main/packages/accountjs) | SDK main repo
+| [accountjs-sdk](https://github.com/accountjs/account.js-next/tree/main/packages/sdk) | SDK main repo
 
 ## Playground
 
