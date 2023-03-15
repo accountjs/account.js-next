@@ -1,16 +1,15 @@
 import type { ethers, BigNumberish } from 'ethers'
-import type { Address } from './helpers'
 import type { ContractConfig } from './contract'
 
 export interface PaymasterConfig {
-  address: Address
-  tokenAddress: Address
+  address: string
+  tokenAddress: string
 }
 
 export interface AccountInitConfig {
   signer: ethers.Signer
   salt?: string
-  accountAddress?: Address
+  accountAddress?: string
   customContracts?: ContractConfig
   paymasterConfig?: PaymasterConfig
 }
@@ -18,7 +17,7 @@ export interface AccountInitConfig {
 export interface CreateAccountConfig {
   signer: ethers.Signer
   salt?: string
-  accountAddress?: Address
+  accountAddress?: string
   customContracts?: ContractConfig
   paymasterConfig?: PaymasterConfig
 }

@@ -1,7 +1,9 @@
-import type { Signer } from 'ethers'
 import { ethers } from 'ethers'
 import { defaultAbiCoder } from 'ethers/lib/utils'
-import type { SimpleAccountFactory as SimpleAccountFactoryContract } from '@account-abstraction/contracts'
+import type {
+  EntryPoint,
+  SimpleAccountFactory as SimpleAccountFactoryContract
+} from '@account-abstraction/contracts'
 import { SimpleAccount__factory } from '@account-abstraction/contracts'
 import { bytecode as ERC1967ProxyCreationCode } from '@openzeppelin/contracts/build/contracts/ERC1967Proxy.json'
 import type { Address } from '../types/helpers'
@@ -9,10 +11,9 @@ import type { Address } from '../types/helpers'
 async function getAccountCreate2Elements(
   accountFactoryContract: SimpleAccountFactoryContract,
   salt: string,
-  signer: Signer
+  signerAddress: string
 ) {
   const factoryAddress = accountFactoryContract.address
-  const signerAddress = await signer.getAddress()
   const implementation = await accountFactoryContract.accountImplementation()
 
   const bytes32Salt = ethers.utils.solidityPack(['uint256'], [salt])
@@ -31,20 +32,20 @@ async function getAccountCreate2Elements(
 
   return {
     bytes32Salt,
-    keccak256DeploymentCode,
-    factoryAddress
+    factoryAddress,
+    keccak256DeploymentCode
   }
 }
 
 export async function calculateAccountAddress(
   accountFactoryContract: SimpleAccountFactoryContract,
   salt: string,
-  signer: Signer
+  signerAddress: string
 ): Promise<Address> {
   const { bytes32Salt, factoryAddress, keccak256DeploymentCode } = await getAccountCreate2Elements(
     accountFactoryContract,
     salt,
-    signer
+    signerAddress
   )
 
   const derivedAddress = ethers.utils.getCreate2Address(
@@ -53,4 +54,21 @@ export async function calculateAccountAddress(
     keccak256DeploymentCode
   )
   return derivedAddress as Address
+}
+
+/**
+ * calculate the account address even before it is deployed
+ */
+export async function getCounterFactualAddress(
+  initCode: string,
+  entryPointView: EntryPoint
+): Promise<string> {
+  // use entryPoint to query account address (factory can provide a helper method to do the same, but
+  // this method attempts to be generic
+  try {
+    await entryPointView.callStatic.getSenderAddress(initCode)
+  } catch (e: any) {
+    return e.errorArgs.sender
+  }
+  throw new Error('must handle revert')
 }

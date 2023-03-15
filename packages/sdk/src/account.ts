@@ -1,3 +1,4 @@
+import type { Overrides } from 'ethers'
 import { BigNumber, ethers } from 'ethers'
 import { resolveProperties } from 'ethers/lib/utils'
 import type { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
@@ -16,7 +17,7 @@ import type { Address } from './types/helpers'
 import type { PreVerificationOp } from './utils/calcPreVerificationGas'
 import { calcPreVerificationGas } from './utils/calcPreVerificationGas'
 import { getUserOpHash } from './utils/encode'
-import { calculateAccountAddress } from './utils/address'
+import { getCounterFactualAddress } from './utils/address'
 import {
   encodeExecutionTransaction,
   encodeFactoryCreateAccountCode,
@@ -69,9 +70,14 @@ export class Account {
       customContracts
     })
     this.#identitySalt = salt ?? ACCOUNTJS_CONSTANT_SALT
+    const signerAddress = await signer.getAddress()
+    const initCode = encodeFactoryCreateAccountCode(
+      this.#accountFactoryContract.address,
+      signerAddress,
+      this.#identitySalt
+    )
     const address =
-      accountAddress ??
-      (await calculateAccountAddress(this.#accountFactoryContract, this.#identitySalt, signer))
+      accountAddress ?? (await getCounterFactualAddress(initCode, this.#entryPointContract))
     this.#accountContract = await getAccountContract({
       signerOrProvider: signer,
       chainId: this.#chainId,
@@ -233,7 +239,13 @@ export class Account {
       throw new Error('Cannot specify gas and gasLimit together in transaction options')
     }
 
-    return await this.#accountContract.execute(to, bigValue, data, options)
+    const overrides: Overrides = {
+      gasLimit: options?.gasLimit,
+      maxFeePerGas: options?.maxFeePerGas,
+      maxPriorityFeePerGas: options?.maxPriorityFeePerGas
+    }
+
+    return await this.#accountContract.execute(to, bigValue, data, overrides)
   }
 
   /**
@@ -257,6 +269,12 @@ export class Account {
     const destinations = txs.map((tx) => tx.to ?? '')
     const callDatas = txs.map((tx) => tx.data ?? '0x00')
 
-    return await this.#accountContract.executeBatch(destinations, callDatas, options)
+    const overrides: Overrides = {
+      gasLimit: options?.gasLimit,
+      maxFeePerGas: options?.maxFeePerGas,
+      maxPriorityFeePerGas: options?.maxPriorityFeePerGas
+    }
+
+    return await this.#accountContract.executeBatch(destinations, callDatas, overrides)
   }
 }

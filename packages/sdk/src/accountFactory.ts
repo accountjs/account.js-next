@@ -5,6 +5,8 @@ import { getAccountFactoryContract } from './utils/getContracts'
 import { Account } from './account'
 import { calculateAccountAddress } from './utils/address'
 import type { ContractConfig } from './types/contract'
+import { ACCOUNTJS_CONSTANT_SALT } from './constants'
+import type { Address } from './types/helpers'
 
 interface AccountFactoryInitConfig {
   signer: ethers.Signer
@@ -13,7 +15,7 @@ interface AccountFactoryInitConfig {
 
 interface AccountDeployConfig {
   salt?: string
-  callback?: (txHash: TransactionReceipt) => void
+  callback?: (receipt: TransactionReceipt) => void
 }
 
 export class AccountFactory {
@@ -52,22 +54,22 @@ export class AccountFactory {
     return this.#provider.getNetwork().then((network) => network.chainId)
   }
 
-  async predictAccountAddress(salt: string) {
-    return calculateAccountAddress(this.#factoryContract, salt, this.#signer)
+  async predictAccountAddress(salt: string, signerAddress: string) {
+    return calculateAccountAddress(this.#factoryContract, salt, signerAddress)
   }
 
   async deployAccount({ salt, callback }: AccountDeployConfig) {
-    const signerAddress = await this.#signer.getAddress()
+    const signerAddress = (await this.#signer.getAddress()) as Address
     if (!signerAddress) {
       throw new Error('Provider must be initialized with a signer to use this method')
     }
-    const identitySalt = salt ?? (Date.now() * 1000 + Math.floor(Math.random() * 1000)).toString()
+    const identitySalt = salt ?? ACCOUNTJS_CONSTANT_SALT
     const transactionReceipt = await this.#factoryContract
       .createAccount(signerAddress, identitySalt)
       .then((tx) => tx.wait())
     callback?.(transactionReceipt)
 
-    const accountAddress = await this.predictAccountAddress(identitySalt)
+    const accountAddress = await this.#factoryContract.getAddress(signerAddress, identitySalt)
     const isContractDeployed = await this.#provider
       .getCode(accountAddress)
       .then((code) => code !== '0x')

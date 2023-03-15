@@ -27,6 +27,7 @@ it('calculateAccountAddress compute the same address as entryPoint createSender 
     customContracts
   })
 
-  const calculatedAddress = await calculateAccountAddress(simpleAccountFactory, salt, signer)
-  expect(calculatedAddress).to.be.eq(await account.getAddress())
+  const signerAddress = await signer.getAddress()
+  const calculatedAddress = await calculateAccountAddress(simpleAccountFactory, salt, signerAddress)
+  expect(calculatedAddress).to.be.eq(account.getAddress())
 })
