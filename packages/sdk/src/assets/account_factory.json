@@ -1,12 +1,11 @@
 {
-  "defaultAddress": "0x0576a174D229E3cFA37253523E645A78A0C91B57",
+  "defaultAddress": "0xA855A1fCF6Be1E16eF3a0115B01965e839b64E65",
   "released": true,
-  "contractName": "EntryPoint",
+  "contractName": "AccountFactory",
   "version": "0.0.5",
   "networkAddresses": {
-    "1": "0x0576a174D229E3cFA37253523E645A78A0C91B57",
-    "5": "0x9B20815493cC9790AbbbD3f90F2657cdEB227640",
-    "11155111": "0x0576a174D229E3cFA37253523E645A78A0C91B57"
+    "5": "0xA855A1fCF6Be1E16eF3a0115B01965e839b64E65",
+    "11155111": "0x7192244743491fcb3f8f682d57ab6e9e1f41de6e"
   },
   "abi": [
     {

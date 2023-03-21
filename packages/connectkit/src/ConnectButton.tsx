@@ -1,11 +1,12 @@
 import { Account } from '@accountjs/sdk'
 import { useEffect, useState } from 'react'
-import { useAccount, useConnect, useDisconnect, useSigner } from 'wagmi'
+import { useAccount, useConnect, useDisconnect, useNetwork, useSigner } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 import { useIsMounted } from './hooks/useIsMounted'
 
 export const ConnectButton = () => {
   const { address, isConnected } = useAccount()
+  const { chain } = useNetwork()
   const { connect } = useConnect({
     connector: new InjectedConnector()
   })
@@ -16,7 +17,7 @@ export const ConnectButton = () => {
 
   useEffect(() => {
     ;(async () => {
-      if (!signer) {
+      if (!signer || !chain || chain.unsupported) {
         return
       }
 

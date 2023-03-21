@@ -1,11 +1,23 @@
 import '@/styles/globals.css'
-import { getDefaultProvider } from 'ethers'
 import type { AppProps } from 'next/app'
-import { createClient, WagmiConfig } from 'wagmi'
+import { configureChains, createClient, goerli, WagmiConfig } from 'wagmi'
+import { publicProvider } from 'wagmi/providers/public'
+import { infuraProvider } from 'wagmi/providers/infura'
+
+const { provider, webSocketProvider } = configureChains(
+  [goerli],
+  [
+    infuraProvider({
+      apiKey: process.env.NEXT_PUBLIC_INFURA_ID!
+    }),
+    publicProvider()
+  ]
+)
 
 const client = createClient({
   autoConnect: false,
-  provider: getDefaultProvider()
+  provider,
+  webSocketProvider
 })
 
 export default function App({ Component, pageProps }: AppProps) {

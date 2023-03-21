@@ -9,7 +9,7 @@ import {
   SimpleAccount__factory,
   SimpleAccountFactory__factory
 } from '@account-abstraction/contracts'
-import { CONTRACTS } from '../constants'
+import { DEPLOYMENTS } from '../constants'
 import type { ContractConfig } from '../types/contract'
 
 export interface BaseGetContractProps {
@@ -24,12 +24,15 @@ export interface GetAccountContractProps extends BaseGetContractProps {
 
 export async function getAccountFactoryContract({
   signerOrProvider,
+  chainId,
   customContracts
 }: BaseGetContractProps): Promise<SimpleAccountFactory> {
-  return SimpleAccountFactory__factory.connect(
-    customContracts?.accountFactoryAddress ?? CONTRACTS.accountFactoryAddress,
-    signerOrProvider
-  )
+  const contractAddress =
+    customContracts?.accountFactoryAddress ?? DEPLOYMENTS.accountFactory.networkAddresses[chainId]
+  if (!contractAddress) {
+    throw new Error('Invalid Account Factory contract address')
+  }
+  return SimpleAccountFactory__factory.connect(contractAddress, signerOrProvider)
 }
 
 export async function getAccountContract({
@@ -41,10 +44,13 @@ export async function getAccountContract({
 
 export async function getEntryPointContract({
   signerOrProvider,
+  chainId,
   customContracts
 }: BaseGetContractProps): Promise<EntryPoint> {
-  return EntryPoint__factory.connect(
-    customContracts?.entryPointAddress ?? CONTRACTS.entryPointAddress,
-    signerOrProvider
-  )
+  const contractAddress =
+    customContracts?.entryPointAddress ?? DEPLOYMENTS.entryPoint.networkAddresses[chainId]
+  if (!contractAddress) {
+    throw new Error('Invalid Account Factory contract address')
+  }
+  return EntryPoint__factory.connect(contractAddress, signerOrProvider)
 }

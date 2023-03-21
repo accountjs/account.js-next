@@ -1,10 +1,21 @@
 import { id } from 'ethers/lib/utils'
-import type { ContractConfig } from './types/contract'
+import ENTRY_POINT from './assets/entry_point.json'
+import ACCOUNT_FACTORY from './assets/account_factory.json'
 
-// TODO: They are hardhat addresses only, update them to specific chain addresses
-export const CONTRACTS: ContractConfig = {
-  accountFactoryAddress: '0x815e8E414447951db9D499AD243D68DB2120e4A0',
-  entryPointAddress: '0xf66af1a6Ebda9511201d1E0BcD4f3358D7299AD6'
+export interface SingletonDeployment {
+  defaultAddress: string
+  version: string
+  abi: any[]
+  networkAddresses: Record<string, string>
+  contractName: string
+  released: boolean
+}
+
+type contractKeys = 'entryPoint' | 'accountFactory'
+
+export const DEPLOYMENTS: Record<contractKeys, SingletonDeployment> = {
+  entryPoint: ENTRY_POINT,
+  accountFactory: ACCOUNT_FACTORY
 }
 
 // Used when user create new wallet without salt
