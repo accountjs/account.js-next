@@ -1,6 +1,6 @@
 import type { Overrides } from 'ethers'
 import { BigNumber, ethers } from 'ethers'
-import { resolveProperties } from 'ethers/lib/utils'
+import { resolveProperties, arrayify } from 'ethers/lib/utils'
 import type { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
 import type {
   UserOperationStruct,
@@ -31,6 +31,7 @@ import type {
   ExecCallRequest,
   TransactionOptions
 } from './types/account'
+import { Paymaster } from './paymaster'
 
 export class Account {
   #provider!: ethers.providers.Provider
@@ -40,6 +41,7 @@ export class Account {
   #accountContract!: SimpleAccountContract
   #entryPointContract!: EntryPointContract
   #identitySalt!: string
+  #paymaster?: Paymaster
 
   static async create(config: CreateAccountConfig): Promise<Account> {
     const account = new Account()
@@ -51,7 +53,8 @@ export class Account {
     signer,
     salt,
     customContracts,
-    accountAddress
+    accountAddress,
+    paymaster,
   }: AccountInitConfig): Promise<void> {
     if (!signer.provider) {
       throw new Error('Signer must be connected to a provider')
@@ -64,11 +67,13 @@ export class Account {
       chainId: this.#chainId,
       customContracts
     })
+
     this.#entryPointContract = await getEntryPointContract({
       signerOrProvider: signer,
       chainId: this.#chainId,
       customContracts
     })
+
     this.#identitySalt = salt ?? ACCOUNTJS_CONSTANT_SALT
     const signerAddress = await signer.getAddress()
     const initCode = encodeFactoryCreateAccountCode(
@@ -76,6 +81,7 @@ export class Account {
       signerAddress,
       this.#identitySalt
     )
+
     const address =
       accountAddress ?? (await getCounterFactualAddress(initCode, this.#entryPointContract))
     this.#accountContract = await getAccountContract({
@@ -83,14 +89,40 @@ export class Account {
       chainId: this.#chainId,
       address
     })
+
+    paymaster ? this.connectPaymaster(paymaster) : null
   }
 
+  /**
+   * Get the chainId of the provider.
+   * @returns The chainId.
+   */
+  async getChainId(): Promise<number> {
+    return this.#provider.getNetwork().then((network) => network.chainId)
+  }
+
+  /**
+   * Returns true if the Account has been deployed.
+   * @returns True if the Account has been deployed.
+   */
+  async isAccountDeployed(): Promise<boolean> {
+    return this.#provider.getCode(this.getAddress()).then((code) => code !== '0x')
+  }
+
+  /**
+   * Returns the address of this Account.
+   * @returns The address of this Account.
+   */
   getAddress(): Address {
     return this.#accountContract.address as Address
   }
 
-  async getChainId(): Promise<number> {
-    return this.#provider.getNetwork().then((network) => network.chainId)
+  /**
+   * Returns the ETH balance of the Account.
+   * @returns The ETH balance of the Account
+   */
+  async getBalance(): Promise<BigNumber> {
+    return this.#provider.getBalance(this.getAddress())
   }
 
   /**
@@ -112,18 +144,17 @@ export class Account {
     return this.#accountContract.owner()
   }
 
+  async connectPaymaster(paymaster: Paymaster): Promise<string> {
+    this.#paymaster = paymaster
+    // TODO: if wallet not activated, change calc account address
+    // TODO: if wallet activated, just add paymaster
+    // TODO: if token is not approve has to approve
+    return paymaster.getPaymasterAddress()
+  }
   /**
-   * Returns the ETH balance of the Account.
-   * @returns The ETH balance of the Account
+   * activate the Account, deploy the Account contract and set the owner to the signer.
+   * @param callback - A callback function that will be called when the transaction is mined.
    */
-  async getBalance(): Promise<BigNumber> {
-    return this.#provider.getBalance(this.getAddress())
-  }
-
-  async isAccountDeployed(): Promise<boolean> {
-    return this.#provider.getCode(this.getAddress()).then((code) => code !== '0x')
-  }
-
   async activateAccount(callback?: (tx: TransactionReceipt) => void): Promise<void> {
     const op = await this.createUnsignedUserOp({
       target: this.getAddress(),
@@ -182,8 +213,9 @@ export class Account {
       maxFeePerGas,
       maxPriorityFeePerGas,
       // TODO: Add paymaster support
-      paymasterAndData: '0x'
+      // paymasterAndData: '0x',
     }
+    partialUserOp.paymasterAndData = this.#paymaster? await this.#paymaster.getPaymasterAndData(partialUserOp) : '0x'
     const op = (await resolveProperties(partialUserOp)) as PreVerificationOp
     return {
       ...partialUserOp,
@@ -199,7 +231,7 @@ export class Account {
   async signUserOp(userOp: UserOperationStruct): Promise<UserOperationStruct> {
     const op = await resolveProperties(userOp)
     const userOpHash = getUserOpHash(op, this.#entryPointContract.address, await this.getChainId())
-    const signature = await this.#signer.signMessage(ethers.utils.arrayify(userOpHash))
+    const signature = await this.#signer.signMessage(arrayify(userOpHash))
     return {
       ...userOp,
       signature

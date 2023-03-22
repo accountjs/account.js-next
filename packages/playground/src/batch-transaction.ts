@@ -33,9 +33,8 @@ async function main(): Promise<void> {
   const bobAccount = await accountFactory.deployAccount({
     salt: ethers.utils.id('2')
   })
+  const bobAddress = bobAccount.getAddress()
   const acliceAddress = aliceAccount.getAddress()
-  const bobAddress = aliceAccount.getAddress()
-
   const bobBalance = await token.balanceOf(bobAddress)
   const aliceBalance = await token.balanceOf(acliceAddress)
   console.log('bob:', bobAddress)
