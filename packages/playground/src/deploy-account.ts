@@ -25,7 +25,10 @@ async function main(): Promise<void> {
   const salt = config.SALT_NONCE
 
   // Predict deployed address
-  const predictedDeployAddress = await accountFactory.predictAccountAddress(salt)
+  const predictedDeployAddress = await accountFactory.predictAccountAddress(
+    salt,
+    await deployerSigner.getAddress()
+  )
 
   const callback = (receipt: ContractReceipt) => {
     console.log('Transaction hash:', receipt.transactionHash)

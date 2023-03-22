@@ -3,18 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 5555",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@accountjs/connect": "workspace:*",
-    "@accountjs/sdk": "workspace:*",
+    "clsx": "^1.2.1",
     "ethers": "^5",
+    "formik": "^2.2.9",
     "next": "13.2.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-use-event-hook": "^0.9.5",
     "typescript": "^4.9.4",
     "wagmi": "^0.12.1"
   },

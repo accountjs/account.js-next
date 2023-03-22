@@ -2,11 +2,25 @@
   "name": "@accountjs/service-client",
   "version": "0.0.1",
   "description": "Account.js Service Client",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepare": "pnpm build"
+  },
   "devDependencies": {
     "eslint-config-custom": "workspace:*",
-    "tsconfig": "workspace:*"
+    "tsconfig": "workspace:*",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@account-abstraction/contracts": "0.5.0",
+    "@accountjs/sdk": "workspace:*",
+    "ethers": "^5",
+    "ky": "^0.33.3"
   }
 }
