@@ -1,14 +1,10 @@
 import Head from 'next/head'
-import { useState } from 'react'
 import cx from 'clsx'
 
 import { inter } from '@/lib/css'
-import { PaymasterMode } from '@/lib/type'
 import { UserAccount } from '@/components/UserAccount'
 
 export default function Home() {
-  const [paymasterMode, setPaymasterMode] = useState<PaymasterMode>(PaymasterMode.none)
-
   return (
     <>
       <Head>
@@ -24,7 +20,7 @@ export default function Home() {
             account.js demo
           </h1>
 
-          <UserAccount paymasterMode={paymasterMode} />
+          <UserAccount />
         </div>
       </main>
     </>
