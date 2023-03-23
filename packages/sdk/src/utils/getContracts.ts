@@ -30,7 +30,7 @@ export async function getAccountFactoryContract({
   const contractAddress =
     customContracts?.accountFactoryAddress ?? DEPLOYMENTS.accountFactory.networkAddresses[chainId]
   if (!contractAddress) {
-    throw new Error('Invalid Account Factory contract address')
+    throw new Error('Invalid AccountFactory contract address')
   }
   return SimpleAccountFactory__factory.connect(contractAddress, signerOrProvider)
 }
@@ -50,7 +50,7 @@ export async function getEntryPointContract({
   const contractAddress =
     customContracts?.entryPointAddress ?? DEPLOYMENTS.entryPoint.networkAddresses[chainId]
   if (!contractAddress) {
-    throw new Error('Invalid Account Factory contract address')
+    throw new Error('Invalid EntryPoint contract address')
   }
   return EntryPoint__factory.connect(contractAddress, signerOrProvider)
 }

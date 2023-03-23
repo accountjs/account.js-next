@@ -1,5 +1,6 @@
-/* eslint-disable no-console, import/no-unresolved, import/no-extraneous-dependencies */
 import * as esbuild from 'esbuild'
+import esbuildStylePlugin from 'esbuild-style-plugin'
+import path from 'path'
 
 const isWatching = process.argv.includes('--watch')
 
@@ -12,6 +13,7 @@ const buildConfig = {
     '.svg': 'dataurl'
   },
   platform: 'browser',
+  bundle: true,
   plugins: [
     {
       name: 'make-all-packages-external',
@@ -22,7 +24,10 @@ const buildConfig = {
           path: args.path
         }))
       }
-    }
+    },
+    esbuildStylePlugin({
+      postcssConfigFile: path.resolve('.', 'postcss.config.cjs')
+    })
   ],
   splitting: true, // Required for tree shaking
   entryPoints: ['./src/index.ts'],

@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "prepare": "pnpm build"
   },
   "dependencies": {
     "@account-abstraction/contracts": "0.5.0",

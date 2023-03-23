@@ -8,10 +8,12 @@
   "scripts": {
     "build": "node build.js",
     "build:watch": "node build.js --watch",
-    "dev": "pnpm build:watch & pnpm typegen:watch",
+    "dev": "pnpm build:watch & pnpm typegen:watch & pnpm css:watch",
     "prepare": "pnpm build",
     "prebuild": "pnpm typegen",
     "typecheck": "pnpm tsc --noEmit",
+    "css": "tailwindcss -i ./src/index.css -o ./dist/index.css",
+    "css:watch": "pnpm css --watch",
     "typegen": "tsc --emitDeclarationOnly || true",
     "typegen:watch": "tsc --emitDeclarationOnly --watch"
   },
@@ -25,18 +27,21 @@
     "wagmi": "0.12.x"
   },
   "dependencies": {
-    "@accountjs/sdk": "workspace:*"
+    "@accountjs/sdk": "workspace:*",
+    "@accountjs/service-client": "workspace:*",
+    "@tailwindcss/forms": "^0.5.3",
+    "@tailwindcss/nesting": "0.0.0-insiders.565cd3e"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "autoprefixer": "^10.4.14",
     "esbuild": "^0.17.11",
+    "esbuild-style-plugin": "^1.6.1",
     "eslint-config-custom": "workspace:*",
-    "tsconfig": "workspace:*",
-    "tsup": "^6.6.3",
-    "vite": "^4.1.4",
-    "vite-plugin-dts": "^2.1.0",
-    "vite-tsconfig-paths": "^4.0.5"
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.2.7",
+    "tsconfig": "workspace:*"
   },
   "resolutions": {
     "react": "^18.0.0",
