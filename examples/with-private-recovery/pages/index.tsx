@@ -21,6 +21,7 @@ export default function Home() {
           </h1>
 
           <UserAccount />
+          <button>recover</button>
         </div>
       </main>
     </>

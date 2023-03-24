@@ -1,4 +1,5 @@
 import '@/styles/globals.css'
+import '@accountjs/connect/dist/index.css'
 import type { AppProps } from 'next/app'
 import { configureChains, createClient, WagmiConfig } from 'wagmi'
 import { goerli, hardhat } from 'wagmi/chains'

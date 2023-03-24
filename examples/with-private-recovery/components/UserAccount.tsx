@@ -1,17 +1,17 @@
 import React from 'react'
-import { Address, erc20ABI } from 'wagmi'
-import cx from 'clsx'
-import { Currency } from '@/lib/type'
-import { TransferProps, Transfer } from './Transfer'
-import { UserBalances } from './UserBalances'
-import { inter } from '@/lib/css'
-import { ConnectButton, useContractAccount, useServiceClient } from '@accountjs/connect'
-import { useUserBalances } from '@/hooks/useBalances'
 import useEvent from 'react-use-event-hook'
-import { faucet } from '@/lib/helper'
-import { LOCAL_CONFIG } from '@/config'
+import { Address, erc20ABI } from 'wagmi'
 import { getContract } from 'wagmi/actions'
 import { parseEther, parseUnits } from 'ethers/lib/utils.js'
+import cx from 'clsx'
+import { ConnectButton, useContractAccount, useServiceClient } from '@accountjs/connect'
+import { Currency } from '@/lib/type'
+import { inter } from '@/lib/css'
+import { useUserBalances } from '@/hooks/useBalances'
+import { faucet } from '@/lib/helper'
+import { LOCAL_CONFIG } from '@/config'
+import { TransferProps, Transfer } from './Transfer'
+import { UserBalances } from './UserBalances'
 
 const { usdt, weth, tokenAddr: fixedToken } = LOCAL_CONFIG
 
@@ -27,7 +27,7 @@ export const UserAccount = () => {
   const { balances, updateBalances } = useUserBalances(account?.getAddress())
 
   const transfer = useEvent(async (currency: Currency, target: string, amount: string) => {
-    if (!serviceClient || !account) {
+    if (!serviceClient || !account || !balances) {
       return
     }
     if (currency === Currency.ether) {
@@ -39,9 +39,10 @@ export const UserAccount = () => {
       return serviceClient.sendUserOp(op)
     }
 
+    const token = balances[currency]
     const tokenAddress = TOKEN_ADDRESS_MAP[currency]
     const contract = getContract({ address: tokenAddress, abi: erc20ABI })
-    const decimals = await contract.decimals()
+    const decimals = await (token?.decimals ?? contract.decimals())
     const data = contract.interface.encodeFunctionData('transfer', [
       target,
       parseUnits(amount, decimals)

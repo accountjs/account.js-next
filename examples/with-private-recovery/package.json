@@ -1,5 +1,5 @@
 {
-  "name": "@accountjs/with-next-example",
+  "name": "@accountjs/with-private-recovery",
   "version": "0.1.0",
   "private": true,
   "scripts": {
