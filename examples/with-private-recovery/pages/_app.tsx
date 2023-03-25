@@ -28,7 +28,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <WagmiConfig client={client}>
       <ConnectKitProvider
         customContracts={{
-          accountFactoryAddress: LOCAL_CONFIG.accountFactory,
+          accountFactoryAddress: LOCAL_CONFIG.privateRecoveryAccountFactory,
           entryPointAddress: LOCAL_CONFIG.entryPoint
         }}
         bundlerUrl={LOCAL_CONFIG.bundlerUrl}

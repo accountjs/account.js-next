@@ -17,6 +17,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "hardhat test",
+    "deploy": "hardhat deploy",
+    "deploy:local": "hardhat deploy --network \"localhost\"",
     "prepare": "pnpm build"
   },
   "dependencies": {

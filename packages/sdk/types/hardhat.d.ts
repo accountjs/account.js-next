@@ -97,6 +97,26 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.EntryPoint__factory>;
     getContractFactory(
+      name: "IPoseidonHasher",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPoseidonHasher__factory>;
+    getContractFactory(
+      name: "ISocialRecoveryVerifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISocialRecoveryVerifier__factory>;
+    getContractFactory(
+      name: "IUpdateGuardianVerifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUpdateGuardianVerifier__factory>;
+    getContractFactory(
+      name: "PrivateRecoveryAccount",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PrivateRecoveryAccount__factory>;
+    getContractFactory(
+      name: "PrivateRecoveryAccountFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PrivateRecoveryAccountFactory__factory>;
+    getContractFactory(
       name: "CheckBalance",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.CheckBalance__factory>;
@@ -218,6 +238,31 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.EntryPoint>;
+    getContractAt(
+      name: "IPoseidonHasher",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPoseidonHasher>;
+    getContractAt(
+      name: "ISocialRecoveryVerifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISocialRecoveryVerifier>;
+    getContractAt(
+      name: "IUpdateGuardianVerifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUpdateGuardianVerifier>;
+    getContractAt(
+      name: "PrivateRecoveryAccount",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PrivateRecoveryAccount>;
+    getContractAt(
+      name: "PrivateRecoveryAccountFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PrivateRecoveryAccountFactory>;
     getContractAt(
       name: "CheckBalance",
       address: string,

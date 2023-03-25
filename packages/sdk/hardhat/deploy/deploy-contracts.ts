@@ -3,6 +3,8 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 export const entryPointDeployed = { name: 'EntryPoint' }
 export const accountFactoryDeployed = { name: 'AccountFactory' }
+export const privateRecoveryAccountFactoryDeployed = { name: 'PrivateRecoveryAccountFactory' }
+export const guardianStorageDeployed = { name: 'GuardianStorage' }
 
 const deploy: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   const { deployments, getNamedAccounts } = hre
@@ -21,6 +23,22 @@ const deploy: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<v
     args: [entryPoint.address],
     log: true,
     deterministicDeployment: true
+  })
+
+  const guardianStorage = await deploy(guardianStorageDeployed.name, {
+    from: deployer,
+    log: true,
+    deterministicDeployment: true
+  })
+
+  await deploy(privateRecoveryAccountFactoryDeployed.name, {
+    from: deployer,
+    args: [entryPoint.address],
+    log: true,
+    deterministicDeployment: true,
+    libraries: {
+      'contracts/GuardianStorage.sol:GuardianStorage': guardianStorage.address
+    }
   })
 }
 

@@ -1,8 +1,12 @@
 export const LOCAL_CONFIG = {
   mnemonic: 'test test test test test test test test test test test junk',
-  entryPoint: '0x0576a174d229e3cfa37253523e645a78a0c91b57',
+  entryPoint: '0x0576a174D229E3cFA37253523E645A78A0C91B57',
   accountFactory: '0x7192244743491fcb3f8f682d57ab6e9e1f41de6e',
   accountForTokenFactory: '0xf25dc911d2c89559aeef1a49e36582f9cb305397',
+  privateRecoveryAccountFactory: '0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44',
+  poseidon: '0x68B1D87F95878fE05B998F19b66F4baba5De1aed',
+  guardianVerifier: '0x9A676e781A523b5d0C0e43731313A708CB607508',
+  socialRecoveryVerifier: '0x0B306BF915C4d645ff596e518fAf3F9669b97016',
   gaslessPaymaster: '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6',
   wethPaymaster: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
   usdtPaymaster: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
@@ -11,7 +15,7 @@ export const LOCAL_CONFIG = {
   usdt: '0x0165878A594ca255338adfa4d48449f69242Eb8F',
   tokenAddr: '0x0f7a41bc01b661847d07077168c439abff37db8d',
   bundlerUrl: 'http://localhost:3000/rpc',
-  providerUrl: 'http://localhost:8545',
+  providerUrl: 'http://localhost:8545'
 } as const
 
 export const GOERLI_CONFIG = {
@@ -26,5 +30,5 @@ export const GOERLI_CONFIG = {
   usdt: '0xC8cd2521A45B6133d134458CE43Def8587E309ea',
   tokenAddr: '0x9Fcfd091b0519775d572C59E37ead19870c49cdD',
   bundlerUrl: 'http://localhost:3000/rpc',
-  providerUrl: 'http://localhost:8545',
+  providerUrl: 'http://localhost:8545'
 } as const

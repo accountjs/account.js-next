@@ -11,6 +11,7 @@ import {
 } from '@account-abstraction/contracts'
 import { DEPLOYMENTS } from '../constants'
 import type { ContractConfig } from '../types/contract'
+import { PrivateRecoveryAccount, PrivateRecoveryAccount__factory } from '../../types'
 
 export interface BaseGetContractProps {
   signerOrProvider: ethers.Signer | ethers.providers.Provider
@@ -35,18 +36,25 @@ export async function getAccountFactoryContract({
   return SimpleAccountFactory__factory.connect(contractAddress, signerOrProvider)
 }
 
-export async function getAccountContract({
+export function getAccountContract({
   signerOrProvider,
   address
-}: GetAccountContractProps): Promise<SimpleAccount> {
+}: GetAccountContractProps): SimpleAccount {
   return SimpleAccount__factory.connect(address, signerOrProvider)
 }
 
-export async function getEntryPointContract({
+export function getPrivateRecoveryAccountContract({
+  signerOrProvider,
+  address
+}: GetAccountContractProps): PrivateRecoveryAccount {
+  return PrivateRecoveryAccount__factory.connect(address, signerOrProvider)
+}
+
+export function getEntryPointContract({
   signerOrProvider,
   chainId,
   customContracts
-}: BaseGetContractProps): Promise<EntryPoint> {
+}: BaseGetContractProps): EntryPoint {
   const contractAddress =
     customContracts?.entryPointAddress ?? DEPLOYMENTS.entryPoint.networkAddresses[chainId]
   if (!contractAddress) {
