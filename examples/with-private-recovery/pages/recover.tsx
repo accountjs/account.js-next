@@ -1,21 +1,30 @@
+import Head from 'next/head'
 import React from 'react'
-import { useAccount, useContractWrite, usePrepareContractWrite } from 'wagmi'
-import { useContractAccount } from '@accountjs/connect'
-import { PrivateRecoveryAccount__factory } from '@accountjs/sdk/dist/types'
+import cx from 'clsx'
+import { UserAccount } from '@/components/UserAccount'
+import { inter } from '@/lib/css'
 
 const Recover = () => {
-  const { address: newOwner } = useAccount()
-  const account = useContractAccount()
-  const args = []
-  const { config } = usePrepareContractWrite({
-    address: account?.getAddress(),
-    abi: PrivateRecoveryAccount__factory.abi,
-    functionName: 'recover',
-    args: []
-  })
-  const { data, isLoading, isSuccess, write } = useContractWrite(config)
+  return (
+    <>
+      <Head>
+        <title>account.js Demo</title>
+        <meta name="description" content="account.js example" />
+        <meta property="og:title" content="account.js example" key="title" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main className={cx('p-24 min-h-screen text-xl')}>
+        <div className="space-y-6">
+          <h1 className={cx('text-5xl font-extrabold capitalize', inter.className)}>
+            account.js demo
+          </h1>
 
-  return <div></div>
+          <UserAccount />
+        </div>
+      </main>
+    </>
+  )
 }
 
 export default Recover
