@@ -1,5 +1,6 @@
 // @ts-expect-error no typing for this just yet
 import { groth16 } from 'snarkjs'
+import path from 'path'
 
 // transform to solidity proof format
 const packToSolidityProof = (proof: any) => {
@@ -41,8 +42,8 @@ export const generateSocialRecoveryProof = async (
 
   const result = await groth16.fullProve(
     input,
-    '../../statics/SocialRecovery.wasm',
-    '../../statics/SocialRecovery.zkey'
+    path.resolve('./static/SocialRecovery.wasm'),
+    path.resolve('./static/SocialRecovery.zkey')
   )
 
   const proof = packToSolidityProof(result.proof)

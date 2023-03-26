@@ -5,7 +5,7 @@ export const LOCAL_CONFIG = {
   accountFactory: '0x7192244743491fcb3f8f682d57ab6e9e1f41de6e',
   accountForTokenFactory: '0xf25dc911d2c89559aeef1a49e36582f9cb305397',
   privateRecoveryAccountFactory: '0x9A676e781A523b5d0C0e43731313A708CB607508',
-  poseidon: '0x68B1D87F95878fE05B998F19b66F4baba5De1aed',
+  poseidon: '0x0B306BF915C4d645ff596e518fAf3F9669b97016',
   guardianVerifier: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e',
   socialRecoveryVerifier: '0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0',
   gaslessPaymaster: '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6',

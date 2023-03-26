@@ -32,6 +32,7 @@ importers:
     specifiers:
       '@accountjs/connect': workspace:*
       '@accountjs/sdk': workspace:*
+      '@geist-ui/core': ^2.3.8
       '@types/node': ^18.15.7
       '@types/react': ^18.0.29
       '@types/react-dom': ^18.0.11
@@ -48,14 +49,15 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       react-use-event-hook: ^0.9.6
-      snarkjs: ^0.6.10
+      snarkjs: ^0.5.0
       tailwindcss: ^3.2.7
       ts-loader: ^9.4.2
       typescript: ^4.9.5
-      wagmi: ^0.12.1
+      wagmi: 0.12.6
     dependencies:
       '@accountjs/connect': link:../../packages/connectkit
       '@accountjs/sdk': link:../../packages/sdk
+      '@geist-ui/core': 2.3.8_biqbaboplfbrettd7655fr4n2y
       circomlibjs: 0.0.8
       clsx: 1.2.1
       ethers: 5.7.2
@@ -65,7 +67,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-use-event-hook: 0.9.6_react@18.2.0
-      snarkjs: 0.6.10
+      snarkjs: 0.5.0
       wagmi: 0.12.6_ipqzt2ojwgfg7gj3uvr3ozp66y
     devDependencies:
       '@types/node': 18.15.7
@@ -1265,6 +1267,17 @@ packages:
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
+
+  /@geist-ui/core/2.3.8_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-OKwGgTA4+fBM41eQbqDoUj4XBycZbYH7Ynrn6LPO5yKX7zeWPu/R7HN3vB4/oHt34VTDQI5sDNb1SirHvNyB5w==}
+    peerDependencies:
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
+    dependencies:
+      '@babel/runtime': 7.21.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
 
   /@humanwhocodes/config-array/0.11.8:
     resolution: {integrity: sha512-UybHIJzJnR5Qc/MsD9Kr+RpO2h+/P1GhOwdiLPXK5TWk5sgTdu88bTD9UP+CKbPPh5Rni1u0GjAdYQLemG8g+g==}
@@ -4391,11 +4404,11 @@ packages:
       fnv-plus: 1.3.1
     dev: false
 
-  /circom_runtime/0.1.22:
-    resolution: {integrity: sha512-V/XYZWBhbZY8SotkaGH4FbiDYAZ8a1Md++MBiKPDOuWS/NIJB+Q+XIiTC8zKMgoDaa9cd2OiTvsC9J6te7twNg==}
+  /circom_runtime/0.1.21:
+    resolution: {integrity: sha512-qTkud630B/GK8y76hnOaaS1aNuF6prfV0dTrkeRsiJKnlP1ryQbP2FWLgDOPqn6aKyaPlam+Z+DTbBhkEzh8dA==}
     hasBin: true
     dependencies:
-      ffjavascript: 0.2.57
+      ffjavascript: 0.2.56
     dev: false
 
   /circomlibjs/0.0.8:
@@ -6116,6 +6129,14 @@ packages:
       mocha: 8.4.0
       wasmcurves: 0.0.14
       worker-threads: 1.0.0
+    dev: false
+
+  /ffjavascript/0.2.56:
+    resolution: {integrity: sha512-em6G5Lrj7ucIqj4TYEgyoHs/j99Urwwqa4+YxEVY2hggnpRimVj+noX5pZQTxI1pvtiekZI4rG65JBf0xraXrg==}
+    dependencies:
+      wasmbuilder: 0.0.16
+      wasmcurves: 0.2.0
+      web-worker: 1.2.0
     dev: false
 
   /ffjavascript/0.2.57:
@@ -9127,13 +9148,13 @@ packages:
       ffjavascript: 0.2.22
     dev: false
 
-  /r1csfile/0.0.45:
-    resolution: {integrity: sha512-YKIp4D441aZ6OoI9y+bfAyb2j4Cl+OFq/iiX6pPWDrL4ZO968h0dq0w07i65edvrTt7/G43mTnl0qEuLXyp/Yw==}
+  /r1csfile/0.0.41:
+    resolution: {integrity: sha512-Q1WDF3u1vYeAwjHo4YuddkA8Aq0TulbKjmGm99+Atn13Lf5fTsMZBnBV9T741w8iSyPFG6Uh6sapQby77sREqA==}
     dependencies:
       '@iden3/bigarray': 0.0.2
       '@iden3/binfileutils': 0.0.11
       fastfile: 0.0.20
-      ffjavascript: 0.2.57
+      ffjavascript: 0.2.56
     dev: false
 
   /randombytes/2.1.0:
@@ -9793,20 +9814,20 @@ packages:
       yargs: 15.4.1
     dev: true
 
-  /snarkjs/0.6.10:
-    resolution: {integrity: sha512-Ls9XPTIuW2Ivk2sACM0Pn/FnKZP8UYYqRbzDl3SnglY5Gw28BIp1sfArOxdJJ2QrlbK7e6FFjMHQPvTp0Ttn0w==}
+  /snarkjs/0.5.0:
+    resolution: {integrity: sha512-KWz8mZ2Y+6wvn6GGkQo6/ZlKwETdAGohd40Lzpwp5TUZCn6N6O4Az1SuX1rw/qREGL6Im+ycb19suCFE8/xaKA==}
     hasBin: true
     dependencies:
       '@iden3/binfileutils': 0.0.11
       bfj: 7.0.2
       blake2b-wasm: 2.4.0
-      circom_runtime: 0.1.22
+      circom_runtime: 0.1.21
       ejs: 3.1.9
       fastfile: 0.0.20
-      ffjavascript: 0.2.57
+      ffjavascript: 0.2.56
       js-sha3: 0.8.0
       logplease: 1.2.15
-      r1csfile: 0.0.45
+      r1csfile: 0.0.41
     dev: false
 
   /solc/0.7.3_debug@4.3.4:
@@ -11731,7 +11752,7 @@ packages:
     dev: false
 
   github.com/weijiekoh/circomlib/24ed08eee0bb613b8c0135d66c1013bd9f78d50a:
-    resolution: {commit: 24ed08eee0bb613b8c0135d66c1013bd9f78d50a, repo: git+ssh://git@github.com/weijiekoh/circomlib.git, type: git}
+    resolution: {tarball: https://codeload.github.com/weijiekoh/circomlib/tar.gz/24ed08eee0bb613b8c0135d66c1013bd9f78d50a}
     name: circomlib
     version: 0.5.2
     dependencies:

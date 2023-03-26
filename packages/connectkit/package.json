@@ -24,7 +24,7 @@
     "ethers": ">=5.5.1 < 6",
     "react": ">=17",
     "react-dom": ">=17",
-    "wagmi": "0.12.x"
+    "wagmi": "0.12.6"
   },
   "dependencies": {
     "@accountjs/sdk": "workspace:*",
@@ -52,6 +52,6 @@
   "resolutions": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "wagmi": "0.12.x"
+    "wagmi": "0.12.6"
   }
 }

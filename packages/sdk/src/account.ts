@@ -1,5 +1,5 @@
-import type { Overrides } from 'ethers'
-import { BigNumber, ethers } from 'ethers'
+import type { Overrides, ethers } from 'ethers'
+import { BigNumber } from 'ethers'
 import { resolveProperties, arrayify } from 'ethers/lib/utils'
 import type { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
 import type {
@@ -31,7 +31,7 @@ import type {
   ExecCallRequest,
   TransactionOptions
 } from './types/account'
-import { Paymaster } from './paymaster'
+import type { Paymaster } from './paymaster'
 
 export class Account {
   #provider!: ethers.providers.Provider
@@ -54,7 +54,7 @@ export class Account {
     salt,
     customContracts,
     accountAddress,
-    paymaster,
+    paymaster
   }: AccountInitConfig): Promise<void> {
     if (!signer.provider) {
       throw new Error('Signer must be connected to a provider')
@@ -211,11 +211,13 @@ export class Account {
       callGasLimit,
       verificationGasLimit: BigNumber.from(1e5).add(initGas),
       maxFeePerGas,
-      maxPriorityFeePerGas,
+      maxPriorityFeePerGas
       // TODO: Add paymaster support
       // paymasterAndData: '0x',
     }
-    partialUserOp.paymasterAndData = this.#paymaster? await this.#paymaster.getPaymasterAndData(partialUserOp) : '0x'
+    partialUserOp.paymasterAndData = this.#paymaster
+      ? await this.#paymaster.getPaymasterAndData(partialUserOp)
+      : '0x'
     const op = (await resolveProperties(partialUserOp)) as PreVerificationOp
     return {
       ...partialUserOp,

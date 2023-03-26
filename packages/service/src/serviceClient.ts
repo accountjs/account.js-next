@@ -1,7 +1,7 @@
 import type { UserOperationStruct } from '@account-abstraction/contracts'
 import { deepHexlify, getEntryPointContract } from '@accountjs/sdk'
 import type { EntryPoint as EntryPointContract } from '@accountjs/sdk/dist/types'
-import type { ContractReceipt, ContractTransaction, Event } from 'ethers'
+import type { ContractReceipt, ContractTransaction } from 'ethers'
 import { BigNumber, providers } from 'ethers'
 
 import { hexValue, resolveProperties } from 'ethers/lib/utils'
@@ -14,32 +14,6 @@ interface ServiceClientCreateConfig {
   // TODO: Make it optional, defaults to official infinitism entry point contract,
   // also see https://github.com/eth-infinitism/bundler/blob/main/packages/bundler/localconfig/bundler.config.json#L5
   entryPointAddress: string
-}
-
-const resolveCallback = async (
-  event: Event,
-  userOpHash: string,
-  resolve: (t: ContractReceipt) => void,
-  reject: (reason: string) => unknown
-): Promise<void> => {
-  if (event.args == null) {
-    // eslint-disable-next-line no-console
-    console.error('got event without args', event)
-    return
-  }
-  if (event.args.userOpHash !== userOpHash) {
-    return
-  }
-
-  const transactionReceipt = await event.getTransactionReceipt()
-  transactionReceipt.transactionHash = userOpHash
-
-  // before returning the receipt, update the status from the event.
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!event.args.success) {
-    await reject('UserOp failed')
-  }
-  resolve(transactionReceipt)
 }
 
 export class ServiceClient {
@@ -76,21 +50,19 @@ export class ServiceClient {
     // return hash result
     const userOpHash = json.result
     const userOp = await resolveProperties(signedOp)
-    const waitPromise = new Promise<ContractReceipt>((resolve, reject) => {
-      const filter = this.#entryPoint.filters.UserOperationEvent(userOpHash)
-      // listener takes time... first query directly:
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      setTimeout(async () => {
-        const res = await this.#entryPoint.queryFilter(filter, 'latest')
-        if (res.length > 0) {
-          resolveCallback(res[0], userOpHash, resolve, reject)
-        } else {
-          this.#entryPoint.once(filter, (events: any) => {
-            resolveCallback(events[events.length - 1], userOpHash, resolve, reject)
-          })
-        }
-      }, 100)
-    })
+    // const waitPromise = new Promise<ContractReceipt>((resolve, reject) => {
+    //   setTimeout(async () => {
+    //     try {
+    //       const events = await this.#entryPoint.queryFilter(
+    //         this.#entryPoint.filters.UserOperationEvent(userOpHash)
+    //       )
+    //       const receipt = await events[0].getTransactionReceipt()
+    //       resolve(receipt)
+    //     } catch (error) {
+    //       reject(error)
+    //     }
+    //   }, 100)
+    // })
 
     return {
       hash: userOpHash,
@@ -102,10 +74,13 @@ export class ServiceClient {
       data: hexValue(userOp.callData), // should extract the actual called method from this "execFromEntryPoint()" call
       chainId: this.#chainId,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      wait: async (_?: number): Promise<ContractReceipt> => {
-        const transactionReceipt = await waitPromise
-        return transactionReceipt
+      async wait(_?: number) {
+        return null as any
       }
+      // wait: async (_?: number): Promise<ContractReceipt> => {
+      //   const transactionReceipt = await waitPromise
+      //   return transactionReceipt
+      // }
     }
   }
 }

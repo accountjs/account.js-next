@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import useEvent from 'react-use-event-hook'
 import { Address, erc20ABI } from 'wagmi'
 import { getContract } from 'wagmi/actions'
 import { parseEther, parseUnits } from 'ethers/lib/utils.js'
 import cx from 'clsx'
 import { ConnectButton, useContractAccount, useServiceClient } from '@accountjs/connect'
-import { PrivateRecoveryAccount } from '@accountjs/sdk/dist/src/accounts/privateRecoveryAccount'
 import { Currency } from '@/lib/type'
 import { inter } from '@/lib/css'
 import { useUserBalances } from '@/hooks/useBalances'
@@ -26,13 +25,6 @@ export const UserAccount = () => {
   const account = useContractAccount()
   const serviceClient = useServiceClient()
   const { balances, updateBalances } = useUserBalances(account?.getAddress())
-
-  useEffect(() => {
-    if (!account) {
-      return
-    }
-    ;(account as PrivateRecoveryAccount).getGuardians()
-  }, [account])
 
   const transfer = useEvent(async (currency: Currency, target: string, amount: string) => {
     if (!serviceClient || !account || !balances) {

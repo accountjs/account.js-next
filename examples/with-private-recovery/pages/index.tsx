@@ -27,14 +27,14 @@ const { guardianVerifier, socialRecoveryVerifier, poseidon } = LOCAL_CONFIG
 
 export default function Home() {
   const [keyPairList, setKeyPairList] = useState<{ privateKey: string; publicKey: BigInt[] }[]>([])
-  const [pubKeyTextValue, setPubKeyTextValue] = useState<string>()
   const { address: ownerAddress } = useAccount()
   const account = useContractAccount()
   const serviceClient = useServiceClient()
   const { updateBalances } = useUserBalances(account?.getAddress())
+  const [isInitializing, setIsInitializing] = useState(false)
 
-  const handleSetupGuardians = useEvent(async (guardians: string[][]) => {
-    if (!pubKeyTextValue || !account || !serviceClient || !ownerAddress) {
+  const handleSetupGuardians = useEvent(async (guardians: BigInt[]) => {
+    if (!account || !serviceClient || !ownerAddress) {
       return
     }
 
@@ -42,43 +42,50 @@ export default function Home() {
       throw new Error('Invalid pubkey')
     }
 
-    const threshold = Math.floor(guardians.length / 2) + 1
-    const tree = await smt.newMemEmptyTrie()
-    await tree.insert(0, ownerAddress)
-    // Insert tree numerically
-    await Promise.all(guardians.map((guard, i) => tree.insert(i + 1, guard)))
+    setIsInitializing(true)
+    try {
+      const threshold = Math.floor(guardians.length / 2) + 1
+      const tree = await smt.newMemEmptyTrie()
+      const lowercasedOwnerAddress = ownerAddress.toLowerCase()
+      await tree.insert(0, lowercasedOwnerAddress)
+      // Insert tree numerically
+      await Promise.all(guardians.map((guard, i) => tree.insert(i + 1, guard)))
 
-    const initializeGuardiansOp = await account.createSignedUserOp({
-      target: account.getAddress(),
-      data: PrivateRecoveryAccount__factory.createInterface().encodeFunctionData(
-        'initilizeGuardians',
-        [
-          // BigInt is available
-          guardians as unknown as string[],
-          threshold,
-          tree.root,
-          guardianVerifier,
-          socialRecoveryVerifier,
-          poseidon
-        ]
-      )
-    })
+      const initializeGuardiansOp = await account.createSignedUserOp({
+        target: account.getAddress(),
+        data: PrivateRecoveryAccount__factory.createInterface().encodeFunctionData(
+          'initilizeGuardians',
+          [
+            // BigInt is available
+            guardians as unknown as string[],
+            threshold,
+            tree.root,
+            guardianVerifier,
+            socialRecoveryVerifier,
+            poseidon
+          ]
+        )
+      })
 
-    const transactionResponse = await serviceClient.sendUserOp(initializeGuardiansOp)
-    await transactionResponse.wait()
-    await updateBalances()
+      const transactionResponse = await serviceClient.sendUserOp(initializeGuardiansOp)
+      await transactionResponse.wait()
+      await updateBalances()
+    } catch (error) {
+      console.log('🚀 ~ file: index.tsx:50 ~ handleSetupGuardians ~ error:', error)
+    }
+    setIsInitializing(false)
   })
 
-  const initializeGuardians = useEvent(() => {
+  const initializeGuardians = useEvent(async () => {
     const keyPairA = generateKeyPair()
     const keyPairB = generateKeyPair()
     const keyPairC = generateKeyPair()
-    setKeyPairList((xs) => [...xs, keyPairA, keyPairB, keyPairC])
+    setKeyPairList([keyPairA, keyPairB, keyPairC])
 
-    handleSetupGuardians([
-      keyPairA.publicKey as unknown as string[],
-      keyPairB.publicKey as unknown as string[],
-      keyPairC.publicKey as unknown as string[]
+    await handleSetupGuardians([
+      keyPairA.publicKey[0] as bigint,
+      keyPairB.publicKey[0] as bigint,
+      keyPairC.publicKey[0] as bigint
     ])
   })
 
@@ -100,22 +107,23 @@ export default function Home() {
           <UserAccount />
 
           <div className="flex flex-col gap-2">
-            <button onClick={initializeGuardians}>Initialize Guardians</button>
+            <button onClick={initializeGuardians} disabled={isInitializing}>
+              Initialize Guardians
+            </button>
+
             {!!keyPairList.length && (
-              <ul>
+              <ul
+                role="list"
+                className="marker:text-sky-400 list-disc pl-5 space-y-3 text-slate-500"
+              >
                 {keyPairList.map(({ privateKey, publicKey }) => (
-                  <li>
+                  <li key={publicKey[0].toString()}>
                     <p>Prv: {privateKey}</p>
                     <p>Pub: {publicKey[0].toString()}</p>
                   </li>
                 ))}
               </ul>
             )}
-            <textarea
-              value={pubKeyTextValue}
-              onChange={(ev) => setPubKeyTextValue(ev.target.value)}
-              readOnly
-            />
           </div>
         </div>
       </main>
