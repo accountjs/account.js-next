@@ -1,4 +1,4 @@
-import { Signer } from 'ethers'
+import type { Signer } from 'ethers'
 import { defaultAbiCoder, keccak256, hexlify, resolveProperties, arrayify } from 'ethers/lib/utils'
 import type { UserOperationStruct } from '@account-abstraction/contracts'
 
@@ -31,7 +31,8 @@ export class TokenPaymaster extends Paymaster {
    *  paymasterAndData value, which will only be returned by this method..
    * @returns the value to put into the PaymasterAndData, undefined to leave it empty
    */
-  async getPaymasterAndData(userOp: Partial<UserOperationStruct>): Promise<string | undefined> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getPaymasterAndData(_: Partial<UserOperationStruct>): Promise<string | undefined> {
     return this.#paymasterAddress
   }
 
@@ -39,7 +40,7 @@ export class TokenPaymaster extends Paymaster {
     return this.#tokenAddress
   }
 
-  async getPaymasterAddress(): Promise<string> { 
+  async getPaymasterAddress(): Promise<string> {
     return this.#paymasterAddress
   }
 }
@@ -54,7 +55,7 @@ export class VerifyingPaymaster extends Paymaster {
     this.#signer = _signer
   }
 
-  async getPaymasterAndData (userOp: UserOperationStruct): Promise<string | undefined> {
+  async getPaymasterAndData(userOp: UserOperationStruct): Promise<string | undefined> {
     const hash = await this.verifyOp(userOp)
     const sig = await this.#signer.signMessage(arrayify(hash))
     return this.#paymasterAddress + sig.substring(2)
@@ -63,15 +64,25 @@ export class VerifyingPaymaster extends Paymaster {
   async getPaymasterToken(): Promise<string | undefined> {
     return undefined
   }
-  
-  async getPaymasterAddress(): Promise<string> { 
+
+  async getPaymasterAddress(): Promise<string> {
     return this.#paymasterAddress
   }
 
-  async verifyOp (userOp1: UserOperationStruct): Promise<string> {
+  async verifyOp(userOp1: UserOperationStruct): Promise<string> {
     const userOp = await resolveProperties(userOp1)
     const enc = defaultAbiCoder.encode(
-      ['address', 'uint256', 'bytes32', 'bytes32', 'uint256', 'uint256', 'uint256', 'uint256', 'uint256'],
+      [
+        'address',
+        'uint256',
+        'bytes32',
+        'bytes32',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint256'
+      ],
       [
         userOp.sender,
         userOp.nonce,
@@ -82,7 +93,8 @@ export class VerifyingPaymaster extends Paymaster {
         userOp.preVerificationGas,
         userOp.maxFeePerGas,
         userOp.maxPriorityFeePerGas
-      ])
+      ]
+    )
     return keccak256(enc)
   }
 }

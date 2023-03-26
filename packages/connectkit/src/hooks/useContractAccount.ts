@@ -22,7 +22,7 @@ export function useContractAccount() {
         })
         setAccount(account)
       } catch (e) {
-        console.log('🚀 ~ file: ConnectButton.tsx:28 ~ ; ~ e:', e)
+        console.log('💣 ~ file: ConnectButton.tsx:28 ~ ; ~ e:', e)
         throw e
       }
     })()
