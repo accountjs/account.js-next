@@ -21,7 +21,7 @@ const TOKEN_ADDRESS_MAP = {
   [Currency.token]: fixedToken
 }
 
-export const UserAccount = () => {
+export const UserAccount = ({ customAccount }: { customAccount?: string }) => {
   const account = useContractAccount()
   const serviceClient = useServiceClient()
   const { balances, updateBalances } = useUserBalances(account?.getAddress())
@@ -85,7 +85,7 @@ export const UserAccount = () => {
     <div className="space-y-6">
       <div className="space-y-1">
         <h2 className={cx('text-3xl font-extrabold capitalize', inter.className)}>Account State</h2>
-        <ConnectButton />
+        <ConnectButton customAccount={customAccount} />
       </div>
       {/* Balances */}
       {/* Demonstrate sponsor and transfer using swc api */}

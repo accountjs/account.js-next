@@ -4,14 +4,14 @@ import { InjectedConnector } from 'wagmi/connectors/injected'
 import { useContractAccount } from './hooks'
 import { useIsMounted } from './hooks/useIsMounted'
 
-export const ConnectButton = () => {
+export const ConnectButton = ({ customAccount }: { customAccount?: string }) => {
   const { connect } = useConnect({
     connector: new InjectedConnector()
   })
   const { disconnect } = useDisconnect()
-  const contractAccount = useContractAccount()
   const [ownerAddress, setOwnerAddress] = useState<string>()
   const { address: fallbackOwnerAddress, isConnected } = useAccount()
+  const contractAccount = useContractAccount(customAccount)
 
   useEffect(() => {
     ;(async () => {

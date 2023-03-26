@@ -33,7 +33,9 @@ export default async function handler(
   const accountContract = PrivateRecoveryAccount__factory.connect(account, relayerAccount)
 
   const guardians = await accountContract.getGuardians().then(xs => xs.map(x => x.toBigInt())) as BigInt[]
+  console.log("🚀 ~ file: recover.ts:36 ~ guardians:", guardians)
   const currentGuardianIndex = guardians.indexOf(publicKey)
+  console.log("🚀 ~ file: recover.ts:37 ~ publicKey:", publicKey)
 
   if (currentGuardianIndex < 0) {
     return res.status(401).json({

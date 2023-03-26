@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { useNetwork, useSigner } from 'wagmi'
 import { useConnectKitContext } from '../ConnectKitProvider'
 
-export function useContractAccount() {
+export function useContractAccount(customAccount?: string) {
+  console.log("🚀 ~ file: useContractAccount.ts:7 ~ useContractAccount ~ customAccount:", customAccount)
   const { chain } = useNetwork()
   const { data: signer } = useSigner()
   const [account, setAccount] = useState<PrivateRecoveryAccount>()
@@ -18,6 +19,7 @@ export function useContractAccount() {
       try {
         const account = await PrivateRecoveryAccount.create({
           signer,
+          accountAddress: customAccount,
           customContracts
         })
         setAccount(account)
@@ -26,7 +28,7 @@ export function useContractAccount() {
         throw e
       }
     })()
-  }, [signer, chain, customContracts])
+  }, [signer, chain, customContracts, customAccount])
 
   return account
 }

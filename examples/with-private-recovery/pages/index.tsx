@@ -1,18 +1,19 @@
 import Head from 'next/head'
 import cx from 'clsx'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { genPrivKey } from 'maci-crypto'
 // @ts-expect-error there is no typing for circomlibjs yet
 import { eddsa, smt } from 'circomlibjs'
 import { useAccount } from 'wagmi'
 import useEvent from 'react-use-event-hook'
-import { useContractAccount, useServiceClient } from '@accountjs/connect'
+import { useContractAccount, useIsMounted, useServiceClient } from '@accountjs/connect'
 import { PrivateRecoveryAccount__factory } from '@accountjs/sdk/dist/types'
 
 import { inter } from '@/lib/css'
 import { UserAccount } from '@/components/UserAccount'
 import { LOCAL_CONFIG } from '@/config'
 import { useUserBalances } from '@/hooks/useBalances'
+import { useRouter } from 'next/router'
 
 const generateKeyPair = () => {
   const privateKey = genPrivKey().toString()
@@ -28,10 +29,24 @@ const { guardianVerifier, socialRecoveryVerifier, poseidon } = LOCAL_CONFIG
 export default function Home() {
   const [keyPairList, setKeyPairList] = useState<{ privateKey: string; publicKey: BigInt[] }[]>([])
   const { address: ownerAddress } = useAccount()
-  const account = useContractAccount()
+  const router = useRouter()
+  const { account: accountAddress } = router.query as { account?: string }
+  console.log('🚀 ~ file: index.tsx:34 ~ Home ~ accountAddress:', accountAddress)
+
+  const account = useContractAccount(accountAddress)
+  console.log('🚀 ~ file: index.tsx:37 ~ Home ~ account:', account)
   const serviceClient = useServiceClient()
   const { updateBalances } = useUserBalances(account?.getAddress())
   const [isInitializing, setIsInitializing] = useState(false)
+
+  useEffect(() => {
+    ;(async () => {
+      console.log(
+        '🚀 ~ file: index.tsx:40 ~ await account?.getGuardians():',
+        await account?.getGuardians().then((xs) => xs.map((x) => x.toString()))
+      )
+    })()
+  }, [account])
 
   const handleSetupGuardians = useEvent(async (guardians: BigInt[]) => {
     if (!account || !serviceClient || !ownerAddress) {
@@ -68,6 +83,10 @@ export default function Home() {
       })
 
       const transactionResponse = await serviceClient.sendUserOp(initializeGuardiansOp)
+      console.log(
+        '🚀 ~ file: index.tsx:71 ~ handleSetupGuardians ~ transactionResponse:',
+        transactionResponse
+      )
       await transactionResponse.wait()
       await updateBalances()
     } catch (error) {
@@ -89,6 +108,11 @@ export default function Home() {
     ])
   })
 
+  const isMounted = useIsMounted()
+  if (!isMounted) {
+    return null
+  }
+
   return (
     <>
       <Head>
@@ -104,7 +128,7 @@ export default function Home() {
             account.js demo
           </h1>
 
-          <UserAccount />
+          <UserAccount customAccount={accountAddress} />
 
           <div className="flex flex-col gap-2">
             <button onClick={initializeGuardians} disabled={isInitializing}>
