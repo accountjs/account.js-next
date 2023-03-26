@@ -80,10 +80,13 @@ export class ServiceClient {
       data: hexValue(userOp.callData), // should extract the actual called method from this "execFromEntryPoint()" call
       chainId: this.#chainId,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      wait: async (_?: number): Promise<ContractReceipt> => {
-        const transactionReceipt = await waitPromise
-        return transactionReceipt
+      async wait(_?: number) {
+        return null as any
       }
+      // wait: async (_?: number): Promise<ContractReceipt> => {
+      //   const transactionReceipt = await waitPromise
+      //   return transactionReceipt
+      // }
     }
   }
 }
