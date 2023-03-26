@@ -1,6 +1,7 @@
-import '@/styles/globals.css'
 import '@accountjs/connect/dist/index.css'
+import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
+import { CssBaseline, GeistProvider } from '@geist-ui/core'
 import { configureChains, createClient, WagmiConfig } from 'wagmi'
 import { goerli, hardhat } from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
@@ -14,7 +15,7 @@ const { provider, webSocketProvider } = configureChains(chains, [
   infuraProvider({
     apiKey: process.env.NEXT_PUBLIC_INFURA_ID!
   }),
-  publicProvider()
+  publicProvider(),
 ])
 
 const client = createClient({
@@ -33,7 +34,10 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
         bundlerUrl={LOCAL_CONFIG.bundlerUrl}
       >
-        <Component {...pageProps} />
+        <GeistProvider>
+          <CssBaseline />
+          <Component {...pageProps} />
+        </GeistProvider>
       </ConnectKitProvider>
     </WagmiConfig>
   )

@@ -11,7 +11,8 @@ import {
 } from '@account-abstraction/contracts'
 import { DEPLOYMENTS } from '../constants'
 import type { ContractConfig } from '../types/contract'
-import { PrivateRecoveryAccount, PrivateRecoveryAccount__factory } from '../../types'
+import type { PrivateRecoveryAccount } from '../../types'
+import { PrivateRecoveryAccount__factory } from '../../types'
 
 export interface BaseGetContractProps {
   signerOrProvider: ethers.Signer | ethers.providers.Provider
@@ -47,6 +48,7 @@ export function getPrivateRecoveryAccountContract({
   signerOrProvider,
   address
 }: GetAccountContractProps): PrivateRecoveryAccount {
+  console.log("🚀 ~ file: getContracts.ts:51 ~ address:", address)
   return PrivateRecoveryAccount__factory.connect(address, signerOrProvider)
 }
 

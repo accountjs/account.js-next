@@ -32,7 +32,7 @@ export const faucet = async (address: Address, token?: Currency) => {
         await admin.sendTransaction({
           to: address,
           value: requiredBalance.sub(bal.value)
-        })
+        }).then(tx => tx.wait())
       }
       break
     }

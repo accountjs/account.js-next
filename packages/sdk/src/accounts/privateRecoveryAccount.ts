@@ -1,23 +1,25 @@
-import { UserOperationStruct } from '@account-abstraction/contracts'
-import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
-import { ethers, BigNumber, Overrides } from 'ethers'
+import type { UserOperationStruct } from '@account-abstraction/contracts'
+import type { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider'
+import type { Overrides } from 'ethers'
+import { ethers, BigNumber } from 'ethers'
 import { resolveProperties } from 'ethers/lib/utils'
-import {
+import type {
   PrivateRecoveryAccount as PrivateRecoveryAccountContract,
   PrivateRecoveryAccountFactory as PrivateRecoveryAccountFactoryContract,
   EntryPoint as EntryPointContract
 } from '../../types'
 import { ACCOUNTJS_CONSTANT_SALT } from '../constants'
-import {
+import type {
   AccountInitConfig,
   CreateAccountConfig,
   ExecCallRequest,
   TransactionDetailsForUserOp,
   TransactionOptions
 } from '../types/account'
-import { Address } from '../types/helpers'
+import type { Address } from '../types/helpers'
 import { getCounterFactualAddress } from '../utils/address'
-import { PreVerificationOp, calcPreVerificationGas } from '../utils/calcPreVerificationGas'
+import type { PreVerificationOp } from '../utils/calcPreVerificationGas'
+import { calcPreVerificationGas } from '../utils/calcPreVerificationGas'
 import {
   encodeExecutionTransaction,
   encodeFactoryCreateAccountCode,
@@ -278,10 +280,6 @@ export class PrivateRecoveryAccount {
 
   async getGuardians() {
     const guardians = await this.#accountContract.getGuardians()
-    console.log(
-      '🚀 ~ file: privateRecoveryAccount.ts:9 ~ PrivateRecoveryAccount ~ getGuardians ~ guardians:',
-      guardians
-    )
     return guardians
   }
 }

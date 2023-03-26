@@ -45,7 +45,7 @@ export function ConnectKitProvider({
     ;(async () => {
       const entryPointAddress =
         customContracts?.entryPointAddress ?? DEPLOYMENTS.entryPoint.networkAddresses[chainId]
-      const client = new ServiceClient({ bundlerUrl, entryPointAddress })
+      const client = new ServiceClient({ bundlerUrl, entryPointAddress, chainId })
       setServiceClient(client)
     })()
   }, [chainId, bundlerUrl, customContracts?.entryPointAddress])

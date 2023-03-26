@@ -1,18 +1,19 @@
 import Head from 'next/head'
 import cx from 'clsx'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { genPrivKey } from 'maci-crypto'
 // @ts-expect-error there is no typing for circomlibjs yet
 import { eddsa, smt } from 'circomlibjs'
 import { useAccount } from 'wagmi'
 import useEvent from 'react-use-event-hook'
-import { useContractAccount, useServiceClient } from '@accountjs/connect'
+import { useContractAccount, useIsMounted, useServiceClient } from '@accountjs/connect'
 import { PrivateRecoveryAccount__factory } from '@accountjs/sdk/dist/types'
 
 import { inter } from '@/lib/css'
 import { UserAccount } from '@/components/UserAccount'
 import { LOCAL_CONFIG } from '@/config'
 import { useUserBalances } from '@/hooks/useBalances'
+import { useRouter } from 'next/router'
 
 const generateKeyPair = () => {
   const privateKey = genPrivKey().toString()
@@ -27,14 +28,28 @@ const { guardianVerifier, socialRecoveryVerifier, poseidon } = LOCAL_CONFIG
 
 export default function Home() {
   const [keyPairList, setKeyPairList] = useState<{ privateKey: string; publicKey: BigInt[] }[]>([])
-  const [pubKeyTextValue, setPubKeyTextValue] = useState<string>()
   const { address: ownerAddress } = useAccount()
-  const account = useContractAccount()
+  const router = useRouter()
+  const { account: accountAddress } = router.query as { account?: string }
+  console.log('🚀 ~ file: index.tsx:34 ~ Home ~ accountAddress:', accountAddress)
+
+  const account = useContractAccount(accountAddress)
+  console.log('🚀 ~ file: index.tsx:37 ~ Home ~ account:', account)
   const serviceClient = useServiceClient()
   const { updateBalances } = useUserBalances(account?.getAddress())
+  const [isInitializing, setIsInitializing] = useState(false)
 
-  const handleSetupGuardians = useEvent(async (guardians: string[][]) => {
-    if (!pubKeyTextValue || !account || !serviceClient || !ownerAddress) {
+  useEffect(() => {
+    ;(async () => {
+      console.log(
+        '🚀 ~ file: index.tsx:40 ~ await account?.getGuardians():',
+        await account?.getGuardians().then((xs) => xs.map((x) => x.toString()))
+      )
+    })()
+  }, [account])
+
+  const handleSetupGuardians = useEvent(async (guardians: BigInt[]) => {
+    if (!account || !serviceClient || !ownerAddress) {
       return
     }
 
@@ -42,45 +57,61 @@ export default function Home() {
       throw new Error('Invalid pubkey')
     }
 
-    const threshold = Math.floor(guardians.length / 2) + 1
-    const tree = await smt.newMemEmptyTrie()
-    await tree.insert(0, ownerAddress)
-    // Insert tree numerically
-    await Promise.all(guardians.map((guard, i) => tree.insert(i + 1, guard)))
+    setIsInitializing(true)
+    try {
+      const threshold = Math.floor(guardians.length / 2) + 1
+      const tree = await smt.newMemEmptyTrie()
+      const lowercasedOwnerAddress = ownerAddress.toLowerCase()
+      await tree.insert(0, lowercasedOwnerAddress)
+      // Insert tree numerically
+      await Promise.all(guardians.map((guard, i) => tree.insert(i + 1, guard)))
 
-    const initializeGuardiansOp = await account.createSignedUserOp({
-      target: account.getAddress(),
-      data: PrivateRecoveryAccount__factory.createInterface().encodeFunctionData(
-        'initilizeGuardians',
-        [
-          // BigInt is available
-          guardians as unknown as string[],
-          threshold,
-          tree.root,
-          guardianVerifier,
-          socialRecoveryVerifier,
-          poseidon
-        ]
+      const initializeGuardiansOp = await account.createSignedUserOp({
+        target: account.getAddress(),
+        data: PrivateRecoveryAccount__factory.createInterface().encodeFunctionData(
+          'initilizeGuardians',
+          [
+            // BigInt is available
+            guardians as unknown as string[],
+            threshold,
+            tree.root,
+            guardianVerifier,
+            socialRecoveryVerifier,
+            poseidon
+          ]
+        )
+      })
+
+      const transactionResponse = await serviceClient.sendUserOp(initializeGuardiansOp)
+      console.log(
+        '🚀 ~ file: index.tsx:71 ~ handleSetupGuardians ~ transactionResponse:',
+        transactionResponse
       )
-    })
-
-    const transactionResponse = await serviceClient.sendUserOp(initializeGuardiansOp)
-    await transactionResponse.wait()
-    await updateBalances()
+      await transactionResponse.wait()
+      await updateBalances()
+    } catch (error) {
+      console.log('🚀 ~ file: index.tsx:50 ~ handleSetupGuardians ~ error:', error)
+    }
+    setIsInitializing(false)
   })
 
-  const initializeGuardians = useEvent(() => {
+  const initializeGuardians = useEvent(async () => {
     const keyPairA = generateKeyPair()
     const keyPairB = generateKeyPair()
     const keyPairC = generateKeyPair()
-    setKeyPairList((xs) => [...xs, keyPairA, keyPairB, keyPairC])
+    setKeyPairList([keyPairA, keyPairB, keyPairC])
 
-    handleSetupGuardians([
-      keyPairA.publicKey as unknown as string[],
-      keyPairB.publicKey as unknown as string[],
-      keyPairC.publicKey as unknown as string[]
+    await handleSetupGuardians([
+      keyPairA.publicKey[0] as bigint,
+      keyPairB.publicKey[0] as bigint,
+      keyPairC.publicKey[0] as bigint
     ])
   })
+
+  const isMounted = useIsMounted()
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <>
@@ -97,25 +128,26 @@ export default function Home() {
             account.js demo
           </h1>
 
-          <UserAccount />
+          <UserAccount customAccount={accountAddress} />
 
           <div className="flex flex-col gap-2">
-            <button onClick={initializeGuardians}>Initialize Guardians</button>
+            <button onClick={initializeGuardians} disabled={isInitializing}>
+              Initialize Guardians
+            </button>
+
             {!!keyPairList.length && (
-              <ul>
+              <ul
+                role="list"
+                className="marker:text-sky-400 list-disc pl-5 space-y-3 text-slate-500"
+              >
                 {keyPairList.map(({ privateKey, publicKey }) => (
-                  <li>
+                  <li key={publicKey[0].toString()}>
                     <p>Prv: {privateKey}</p>
                     <p>Pub: {publicKey[0].toString()}</p>
                   </li>
                 ))}
               </ul>
             )}
-            <textarea
-              value={pubKeyTextValue}
-              onChange={(ev) => setPubKeyTextValue(ev.target.value)}
-              readOnly
-            />
           </div>
         </div>
       </main>
