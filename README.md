@@ -14,7 +14,15 @@ This project includes a [playground](https://github.com/accountjs/account.js-nex
 
 Update the config inside the scripts and execute the following commands to run each play:
 
-#### Deploy a account
+#### Run example
 ```bash
-pnpm play deploy-account
+# cd ..bundler
+pnpm hardhat-node-with-deploy
+pnpm bundler --unsafe
+
+# cd ./examples/with-private-guardians-contract
+pnpm hardhat compile
+pnpm hardhat deploy --network localhost
+
+pnpm dev
 ```

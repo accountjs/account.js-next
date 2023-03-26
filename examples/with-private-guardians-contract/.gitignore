@@ -1,0 +1,18 @@
+node_modules
+coverage
+coverage.json
+typechain
+typechain-types
+package-lock.json
+
+# Circuit files
+compile
+compileCircuit.sh
+
+# Hardhat files
+cache
+artifacts
+statics
+
+.DS_Store
+*/.env
