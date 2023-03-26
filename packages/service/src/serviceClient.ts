@@ -1,7 +1,8 @@
 import type { UserOperationStruct } from '@account-abstraction/contracts'
 import { deepHexlify, getEntryPointContract } from '@accountjs/sdk'
-import { EntryPoint as EntryPointContract } from '@accountjs/sdk/dist/types'
-import { BigNumber, ContractReceipt, ContractTransaction, Event, providers } from 'ethers'
+import type { EntryPoint as EntryPointContract } from '@accountjs/sdk/dist/types'
+import type { ContractReceipt, ContractTransaction, Event } from 'ethers'
+import { BigNumber, providers } from 'ethers'
 
 import { hexValue, resolveProperties } from 'ethers/lib/utils'
 import ky from 'ky'
@@ -22,6 +23,7 @@ const resolveCallback = async (
   reject: (reason: string) => unknown
 ): Promise<void> => {
   if (event.args == null) {
+    // eslint-disable-next-line no-console
     console.error('got event without args', event)
     return
   }
@@ -99,6 +101,7 @@ export class ServiceClient {
       value: BigNumber.from(0),
       data: hexValue(userOp.callData), // should extract the actual called method from this "execFromEntryPoint()" call
       chainId: this.#chainId,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       wait: async (_?: number): Promise<ContractReceipt> => {
         const transactionReceipt = await waitPromise
         return transactionReceipt
