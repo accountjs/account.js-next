@@ -50,23 +50,24 @@ export class ServiceClient {
     // return hash result
     const userOpHash = json.result
     const userOp = await resolveProperties(signedOp)
-    const waitPromise = new Promise<ContractReceipt>((resolve, reject) => {
-      const getReceipt = async () => {
-        try {
-          const events = await this.#entryPoint.queryFilter(
-            this.#entryPoint.filters.UserOperationEvent(userOpHash),
-            'latest'
-          )
-          const receipt = await events[0].getTransactionReceipt()
-          if (receipt) {
-            return resolve(receipt)
-          }
-          setTimeout(getReceipt, 333)
-        } catch (error) {
-          reject(error)
-        }
-      }
-      setTimeout(getReceipt, 100)
+    const waitPromise = new Promise<ContractReceipt>(() => {
+      return null
+      // const getReceipt = async () => {
+      //   try {
+      //     const events = await this.#entryPoint.queryFilter(
+      //       this.#entryPoint.filters.UserOperationEvent(userOpHash),
+      //       'latest'
+      //     )
+      //     const receipt = await events[0].getTransactionReceipt()
+      //     if (receipt) {
+      //       return resolve(receipt)
+      //     }
+      //     setTimeout(getReceipt, 333)
+      //   } catch (error) {
+      //     reject(error)
+      //   }
+      // }
+      // setTimeout(getReceipt, 100)
     })
 
     return {
