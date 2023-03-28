@@ -8,13 +8,15 @@ import { useAccount } from 'wagmi'
 import useEvent from 'react-use-event-hook'
 import { useContractAccount, useIsMounted, useServiceClient } from '@accountjs/connect'
 import { PrivateRecoveryAccount__factory } from '@accountjs/sdk/dist/types'
+import { useRouter } from 'next/router'
+import { Button } from '@geist-ui/core'
+import Image from 'next/image'
+import Logo from '../public/private_guardian_logo.png'
 
 import { inter } from '@/lib/css'
 import { UserAccount } from '@/components/UserAccount'
 import { LOCAL_CONFIG } from '@/config'
 import { useUserBalances } from '@/hooks/useBalances'
-import { useRouter } from 'next/router'
-import { Button } from '@geist-ui/core'
 
 const generateKeyPair = () => {
   const privateKey = genPrivKey().toString()
@@ -115,17 +117,20 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>account.js Demo with private recovery</title>
-        <meta name="description" content="account.js example" />
-        <meta property="og:title" content="account.js example" key="title" />
+        <title>Private Guardian - Wallet</title>
+        <meta name="description" content="Private Guardian - Wallet" />
+        <meta property="og:title" content="Private Guardian - Wallet" key="title" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={cx('p-24 min-h-screen text-xl')}>
+      <main className={cx('p-24 text-xl')}>
         <div className="space-y-6">
-          <h1 className={cx('text-5xl font-extrabold capitalize', inter.className)}>
-            account.js demo with private recovery
-          </h1>
+          <div className="flex items-end gap-4">
+            <Image src={Logo.src} height={60} width={60} alt="Private guardian logo" />
+            <h1 className={cx('text-5xl font-extrabold capitalize mb-0', inter.className)}>
+              Private Guardian - Wallet
+            </h1>
+          </div>
 
           <UserAccount customAccount={accountAddress} />
 
@@ -149,6 +154,12 @@ export default function Home() {
             )}
           </div>
         </div>
+        <footer className="py-12 text-lg capitalize font-semibold">
+          backed by{' '}
+          <a href="https://github.com/accountjs/account.js-next" target="_blank" rel="noreferrer">
+            accountjs SDK
+          </a>
+        </footer>
       </main>
     </>
   )

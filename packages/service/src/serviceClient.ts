@@ -62,15 +62,6 @@ export class ServiceClient {
             return resolve(receipt)
           }
           setTimeout(getReceipt, 333)
-          // const userOpResponse = await ky.post(this.#bundlerUrl, {
-          //   method: 'post',
-          //   json: {
-          //     method: 'eth_getUserOperationReceipt',
-          //     params: [userOpHash],
-          //     jsonrpc: '2.0'
-          //   }
-          // })
-          // const { result: receipt } = await userOpResponse.json<{ result: ContractReceipt }>()
         } catch (error) {
           reject(error)
         }

@@ -14,7 +14,6 @@ import { TransferProps, Transfer } from './Transfer'
 import { UserBalances } from './UserBalances'
 import { Button } from '@geist-ui/core'
 import { InjectedConnector } from 'wagmi/connectors/injected'
-import { useIsMounted } from '@/hooks/useIsMounted'
 
 const { usdt, weth, tokenAddr: fixedToken } = LOCAL_CONFIG
 

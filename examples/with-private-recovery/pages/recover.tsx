@@ -12,6 +12,8 @@ import { Account__factory } from '@accountjs/sdk/dist/types'
 import { Button, Text, useToasts } from '@geist-ui/core'
 import { useIsMounted } from '@/hooks/useIsMounted'
 import Link from 'next/link'
+import Image from 'next/image'
+import Logo from '../public/private_guardian_logo.png'
 
 const Recover = () => {
   const router = useRouter()
@@ -93,21 +95,26 @@ const Recover = () => {
   return (
     <>
       <Head>
-        <title>account.js Demo</title>
-        <meta name="description" content="account.js example" />
-        <meta property="og:title" content="account.js example" key="title" />
+        <title>Private Guardian - Social Recovery</title>
+        <meta name="description" content="Private Guardian - Social Recovery" />
+        <meta property="og:title" content="Private Guardian - Social Recovery" key="title" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={cx('p-24 min-h-screen text-xl')}>
+      <main className={cx('p-24 text-xl')}>
         <div className="space-y-6">
           <Link href={account ? `/?account=${account}` : '/'}>
-            <h1 className={cx('text-5xl font-extrabold capitalize', inter.className)}>
-              account.js demo with private recovery
-            </h1>
+            <div className="flex items-end gap-4">
+              <Image src={Logo.src} height={60} width={60} alt="Private guardian logo" />
+              <h1 className={cx('text-5xl font-extrabold capitalize m-0', inter.className)}>
+                Private Guardian
+              </h1>
+            </div>
           </Link>
 
-          <h2 className={cx('text-3xl font-extrabold capitalize', inter.className)}>Recover</h2>
+          <h2 className={cx('text-3xl font-extrabold capitalize', inter.className)}>
+            Social Recovery
+          </h2>
           {isConnected ? (
             <Button
               className="acck-capitalize acck-inline-flex acck-items-center acck-rounded-md acck-border acck-border-transparent acck-bg-pink-600 acck-px-2 acck-py-2 acck-text-sm acck-font-medium acck-leading-4 acck-text-white acck-shadow-sm hover:acck-bg-pink-700 focus:acck-outline-none focus:acck-ring-2 focus:acck-ring-pink-500 focus:acck-ring-offset-2"
@@ -174,6 +181,13 @@ const Recover = () => {
             </Button>
           </div>
         </div>
+
+        <footer className="py-12 text-lg capitalize font-semibold">
+          backed by{' '}
+          <a href="https://github.com/accountjs/account.js-next" target="_blank" rel="noreferrer">
+            accountjs SDK
+          </a>
+        </footer>
       </main>
     </>
   )
