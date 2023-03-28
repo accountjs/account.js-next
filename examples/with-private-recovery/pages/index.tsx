@@ -12,6 +12,7 @@ import { useRouter } from 'next/router'
 import { Button } from '@geist-ui/core'
 import Image from 'next/image'
 import Logo from '../public/private_guardian_logo.png'
+import Link from 'next/link'
 
 import { inter } from '@/lib/css'
 import { UserAccount } from '@/components/UserAccount'
@@ -125,12 +126,12 @@ export default function Home() {
       </Head>
       <main className={cx('p-24 text-xl')}>
         <div className="space-y-6">
-          <div className="flex items-end gap-4">
+          <Link href="/" className="flex items-end gap-4">
             <Image src={Logo.src} height={60} width={60} alt="Private guardian logo" />
             <h1 className={cx('text-5xl font-extrabold capitalize mb-0', inter.className)}>
               Private Guardian - Wallet
             </h1>
-          </div>
+          </Link>
 
           <UserAccount customAccount={accountAddress} />
 
