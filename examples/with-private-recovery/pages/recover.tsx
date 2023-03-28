@@ -4,13 +4,14 @@ import React, { useState } from 'react'
 import useEvent from 'react-use-event-hook'
 import cx from 'clsx'
 import { inter } from '@/lib/css'
-import { Address, useAccount, useConnect, useContractRead, useProvider } from 'wagmi'
+import { Address, useAccount, useConnect, useContractRead, useDisconnect, useProvider } from 'wagmi'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 // @ts-expect-error no typings for circomlibjs
 import { eddsa, poseidon } from 'circomlibjs'
 import { Account__factory } from '@accountjs/sdk/dist/types'
 import { Button, Text, useToasts } from '@geist-ui/core'
 import { useIsMounted } from '@/hooks/useIsMounted'
+import Link from 'next/link'
 
 const Recover = () => {
   const router = useRouter()
@@ -19,16 +20,17 @@ const Recover = () => {
   const [privateKey, setPrivateKey] = useState<string>()
   const [isRecovering, setIsRecovering] = useState(false)
 
-  const { data: oldOwner } = useContractRead({
+  const { data: oldOwner, refetch } = useContractRead({
     address: account as Address,
     abi: Account__factory.abi,
     functionName: 'owner'
   })
 
-  const { address: newOwner, connector } = useAccount()
+  const { address: newOwner, isConnected } = useAccount()
   const { connect } = useConnect({
     connector: new InjectedConnector()
   })
+  const { disconnect } = useDisconnect()
 
   const hasNoAccount = !account
   const hasNoOwner = !oldOwner || !newOwner
@@ -40,7 +42,9 @@ const Recover = () => {
       {hasNoAccount
         ? 'No account provided, Please open this from recovery external link. '
         : isSameOwner
-        ? 'You are the owner of this account'
+        ? 'You are now the owner of this account'
+        : hasNoOwner
+        ? 'This contract account has not been deployed yet'
         : null}
     </Text>
   )
@@ -64,9 +68,18 @@ const Recover = () => {
         method: 'post',
         body: JSON.stringify(data)
       })
-      console.log('🚀 ~ file: recover.tsx:53 ~ handleRecover ~ response:', response)
-    } catch (error) {
-      console.log('💣 ~ file: recover.tsx:69 ~ handleRecover ~ error:', error)
+      const json = await response.json()
+      if (response.status !== 200) {
+        throw json.error.message
+      }
+      setToast({ text: `Vote recover with ${account} success`, type: 'success' })
+      const { data: owner } = await refetch()
+      if (owner === newOwner) {
+        setToast({ text: `Account has been recover to ${newOwner}!`, type: 'success' })
+        setPrivateKey(undefined)
+      }
+    } catch (errorMsg) {
+      setToast({ text: errorMsg as string, type: 'error' })
     }
     setIsRecovering(false)
   })
@@ -88,11 +101,23 @@ const Recover = () => {
       </Head>
       <main className={cx('p-24 min-h-screen text-xl')}>
         <div className="space-y-6">
-          <h1 className={cx('text-5xl font-extrabold capitalize', inter.className)}>
-            account.js demo
-          </h1>
+          <Link href={account ? `/?account=${account}` : '/'}>
+            <h1 className={cx('text-5xl font-extrabold capitalize', inter.className)}>
+              account.js demo with private recovery
+            </h1>
+          </Link>
+
           <h2 className={cx('text-3xl font-extrabold capitalize', inter.className)}>Recover</h2>
-          <Button onClick={() => connect({ connector })}>Connect your account</Button>
+          {isConnected ? (
+            <Button
+              className="acck-capitalize acck-inline-flex acck-items-center acck-rounded-md acck-border acck-border-transparent acck-bg-pink-600 acck-px-2 acck-py-2 acck-text-sm acck-font-medium acck-leading-4 acck-text-white acck-shadow-sm hover:acck-bg-pink-700 focus:acck-outline-none focus:acck-ring-2 focus:acck-ring-pink-500 focus:acck-ring-offset-2"
+              onClick={() => disconnect()}
+            >
+              Disconnect
+            </Button>
+          ) : (
+            <Button onClick={() => connect()}>Connect Wallet</Button>
+          )}
 
           <div className="">
             <div className="flex gap-4 items-center">
@@ -123,7 +148,7 @@ const Recover = () => {
                 htmlFor="privateKey"
                 className="absolute -top-2 left-2 inline-block bg-white px-1 text-xs font-medium text-gray-900"
               >
-                privateKey
+                ZK PrivateKey
               </label>
               <input
                 type="text"
@@ -133,6 +158,7 @@ const Recover = () => {
                 placeholder="..."
                 value={privateKey}
                 onChange={(ev) => setPrivateKey(ev.target.value)}
+                disabled={disabledRecover}
               />
               {warningMessageNode}
             </div>

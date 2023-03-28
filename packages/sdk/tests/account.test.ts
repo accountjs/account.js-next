@@ -1,6 +1,7 @@
 import { deployments, ethers } from 'hardhat'
 import { expect } from 'chai'
 import { parseEther } from 'ethers/lib/utils'
+import type { UserOperationStruct } from '@account-abstraction/contracts'
 import { TestToken__factory, CheckBalance__factory } from '../types'
 import { Account } from '../src'
 import { getAccountFactory, getEntryPoint } from './utils/setupContracts'
@@ -126,74 +127,74 @@ describe('Account', () => {
     expect(tokenBalanceAfterTransfered).to.be.deep.eq(parseEther('0'))
   })
 
-  // it('execute batch ops from entryPoint.handleOps', async () => {
-  //   const { signer, accounts, customContracts, entryPoint, testToken, checkBalance } =
-  //     await setupTests()
-  //   const account = await Account.create({
-  //     signer,
-  //     customContracts
-  //   })
-  //   const accountAddress = account.getAddress()
-  //   const beneficiary = accountAddress
-  //   const reuiqredGas = parseEther('0.2')
-  //   const TEN_TOKEN = parseEther('10')
+  it('execute batch ops from entryPoint.handleOps', async () => {
+    const { signer, accounts, customContracts, entryPoint, testToken, checkBalance } =
+      await setupTests()
+    const account = await Account.create({
+      signer,
+      customContracts
+    })
+    const accountAddress = account.getAddress()
+    const beneficiary = accountAddress
+    const reuiqredGas = parseEther('0.2')
+    const TEN_TOKEN = parseEther('10')
 
-  //   await signer.sendTransaction({
-  //     from: accounts[0],
-  //     to: accountAddress,
-  //     value: parseEther('2')
-  //   })
+    await signer.sendTransaction({
+      from: accounts[0],
+      to: accountAddress,
+      value: parseEther('2')
+    })
 
-  //   expect(await testToken.balanceOf(accountAddress)).to.be.eq(0)
+    expect(await testToken.balanceOf(accountAddress)).to.be.eq(0)
 
-  //   expect(await account.isAccountDeployed()).to.be.false
-  //   await account.activateAccount()
-  //   expect(await account.isAccountDeployed()).to.be.true
+    expect(await account.isAccountDeployed()).to.be.false
+    await account.activateAccount()
+    expect(await account.isAccountDeployed()).to.be.true
 
-  //   const mintTokenOp = await account.createSignedUserOp({
-  //     target: testToken.address,
-  //     data: testToken.interface.encodeFunctionData('mint', [accountAddress, TEN_TOKEN])
-  //   })
-  //   await entryPoint.handleOps([mintTokenOp], beneficiary)
-  //   expect(await testToken.balanceOf(accountAddress)).to.be.deep.eq(TEN_TOKEN)
+    const mintTokenOp = await account.createSignedUserOp({
+      target: testToken.address,
+      data: testToken.interface.encodeFunctionData('mint', [accountAddress, TEN_TOKEN])
+    })
+    await entryPoint.handleOps([mintTokenOp], beneficiary)
+    expect(await testToken.balanceOf(accountAddress)).to.be.deep.eq(TEN_TOKEN)
 
-  //   // Create batch operations after account creation, which would update further operations initCode to '0x'
-  //   const checkRequiredEthersBalanceOp = await account.createSignedUserOp({
-  //     target: checkBalance.address,
-  //     data: checkBalance.interface.encodeFunctionData('checkEthers', [reuiqredGas])
-  //   })
-  //   const approveToSignerOp = await account.createSignedUserOp({
-  //     target: testToken.address,
-  //     data: testToken
-  //       .connect(accountAddress)
-  //       .interface.encodeFunctionData('approve', [accounts[0], parseEther('1')])
-  //   })
-  //   const transferToSignerOp = await account.createSignedUserOp({
-  //     target: testToken.address,
-  //     data: testToken.interface.encodeFunctionData('transferFrom', [
-  //       accountAddress,
-  //       accounts[0],
-  //       parseEther('1')
-  //     ]),
-  //     // Custom gaslimit to by pass estimate error
-  //     gasLimit: 1e6
-  //   })
-  //   const transferToOtherOp = await account.createSignedUserOp({
-  //     target: testToken.address,
-  //     data: testToken.interface.encodeFunctionData('transfer', [accounts[1], parseEther('9')])
-  //   })
-  //   // TODO: Error: invalid nonce
-  //   const userOps: UserOperationStruct[] = [
-  //     checkRequiredEthersBalanceOp,
-  //     approveToSignerOp,
-  //     transferToSignerOp,
-  //     transferToOtherOp
-  //   ]
+    // Create batch operations after account creation, which would update further operations initCode to '0x'
+    const checkRequiredEthersBalanceOp = await account.createSignedUserOp({
+      target: checkBalance.address,
+      data: checkBalance.interface.encodeFunctionData('checkEthers', [reuiqredGas])
+    })
+    const approveToSignerOp = await account.createSignedUserOp({
+      target: testToken.address,
+      data: testToken
+        .connect(accountAddress)
+        .interface.encodeFunctionData('approve', [accounts[0], parseEther('1')])
+    })
+    const transferToSignerOp = await account.createSignedUserOp({
+      target: testToken.address,
+      data: testToken.interface.encodeFunctionData('transferFrom', [
+        accountAddress,
+        accounts[0],
+        parseEther('1')
+      ]),
+      // Custom gaslimit to by pass estimate error
+      gasLimit: 1e6
+    })
+    const transferToOtherOp = await account.createSignedUserOp({
+      target: testToken.address,
+      data: testToken.interface.encodeFunctionData('transfer', [accounts[1], parseEther('9')])
+    })
+    // TODO: Error: invalid nonce
+    const userOps: UserOperationStruct[] = [
+      checkRequiredEthersBalanceOp,
+      approveToSignerOp,
+      transferToSignerOp,
+      transferToOtherOp
+    ]
 
-  //   await expect(entryPoint.handleOps(userOps, beneficiary))
-  //     .to.emit(checkBalance, 'CheckedBalance')
-  //     .withArgs(accountAddress, reuiqredGas)
-  //     .to.emit(testToken, 'Approval')
-  //     .withArgs(accounts[0], parseEther('1'))
-  // })
+    await expect(entryPoint.handleOps(userOps, beneficiary))
+      .to.emit(checkBalance, 'CheckedBalance')
+      .withArgs(accountAddress, reuiqredGas)
+      .to.emit(testToken, 'Approval')
+      .withArgs(accounts[0], parseEther('1'))
+  })
 })

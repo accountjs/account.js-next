@@ -41,9 +41,14 @@ export const faucet = async (address: Address, token?: Currency) => {
       if (bal.value.lt(requiredBalance)) {
         const requiredAmount = requiredBalance.sub(bal.value)
         // wrap ETH to WETH
+        const estimatedGas = await admin.estimateGas({
+          to: weth,
+          value: requiredAmount,
+        })
         await admin.sendTransaction({
           to: weth,
-          value: requiredAmount
+          value: requiredAmount,
+          gasLimit: estimatedGas.mul(3).div(2)
         })
 
         const config = await prepareWriteContract({
@@ -51,7 +56,7 @@ export const faucet = async (address: Address, token?: Currency) => {
           abi: erc20ABI,
           functionName: 'transfer',
           args: [address, requiredAmount],
-          signer: admin
+          signer: admin,
         })
         await writeContract(config).then((tx) => tx.wait())
       }

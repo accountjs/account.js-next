@@ -1,14 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
-import { InjectedConnector } from 'wagmi/connectors/injected'
+import { useAccount } from 'wagmi'
 import { useContractAccount } from './hooks'
 import { useIsMounted } from './hooks/useIsMounted'
 
 export const ConnectButton = ({ customAccount }: { customAccount?: string }) => {
-  const { connect } = useConnect({
-    connector: new InjectedConnector()
-  })
-  const { disconnect } = useDisconnect()
   const [ownerAddress, setOwnerAddress] = useState<string>()
   const { address: fallbackOwnerAddress, isConnected } = useAccount()
   const contractAccount = useContractAccount(customAccount)
@@ -32,16 +27,17 @@ export const ConnectButton = ({ customAccount }: { customAccount?: string }) => 
   if (isConnected) {
     return (
       <div className="acck-flex acck-flex-col">
-        <span>Eoa Address: {ownerAddress}</span>
+        <span>EOA Address: {ownerAddress}</span>
         <span>SCW Address: {contractAccount?.getAddress()}</span>
-        <button onClick={() => disconnect()}>Disconnect</button>
       </div>
     )
   }
 
-  return (
-    <button className="" onClick={() => connect()}>
-      Connect Wallet
-    </button>
-  )
+  return null
+
+  // return (
+  //   <button className="" onClick={() => connect()}>
+  //     Connect Wallet
+  //   </button>
+  // )
 }

@@ -48,7 +48,6 @@ export function getPrivateRecoveryAccountContract({
   signerOrProvider,
   address
 }: GetAccountContractProps): PrivateRecoveryAccount {
-  console.log("🚀 ~ file: getContracts.ts:51 ~ address:", address)
   return PrivateRecoveryAccount__factory.connect(address, signerOrProvider)
 }
 

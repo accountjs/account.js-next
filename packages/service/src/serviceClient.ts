@@ -50,19 +50,33 @@ export class ServiceClient {
     // return hash result
     const userOpHash = json.result
     const userOp = await resolveProperties(signedOp)
-    // const waitPromise = new Promise<ContractReceipt>((resolve, reject) => {
-    //   setTimeout(async () => {
-    //     try {
-    //       const events = await this.#entryPoint.queryFilter(
-    //         this.#entryPoint.filters.UserOperationEvent(userOpHash)
-    //       )
-    //       const receipt = await events[0].getTransactionReceipt()
-    //       resolve(receipt)
-    //     } catch (error) {
-    //       reject(error)
-    //     }
-    //   }, 100)
-    // })
+    const waitPromise = new Promise<ContractReceipt>((resolve, reject) => {
+      const getReceipt = async () => {
+        try {
+          const events = await this.#entryPoint.queryFilter(
+            this.#entryPoint.filters.UserOperationEvent(userOpHash),
+            'latest'
+          )
+          const receipt = await events[0].getTransactionReceipt()
+          if (receipt) {
+            return resolve(receipt)
+          }
+          setTimeout(getReceipt, 333)
+          // const userOpResponse = await ky.post(this.#bundlerUrl, {
+          //   method: 'post',
+          //   json: {
+          //     method: 'eth_getUserOperationReceipt',
+          //     params: [userOpHash],
+          //     jsonrpc: '2.0'
+          //   }
+          // })
+          // const { result: receipt } = await userOpResponse.json<{ result: ContractReceipt }>()
+        } catch (error) {
+          reject(error)
+        }
+      }
+      setTimeout(getReceipt, 100)
+    })
 
     return {
       hash: userOpHash,
@@ -74,13 +88,10 @@ export class ServiceClient {
       data: hexValue(userOp.callData), // should extract the actual called method from this "execFromEntryPoint()" call
       chainId: this.#chainId,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      async wait(_?: number) {
-        return null as any
+      wait: async (_?: number): Promise<ContractReceipt> => {
+        const transactionReceipt = await waitPromise
+        return transactionReceipt
       }
-      // wait: async (_?: number): Promise<ContractReceipt> => {
-      //   const transactionReceipt = await waitPromise
-      //   return transactionReceipt
-      // }
     }
   }
 }

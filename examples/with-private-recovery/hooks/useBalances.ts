@@ -25,7 +25,7 @@ export function useUserBalances(givenAddress?: string) {
   const { data: tokenBalance, refetch: refetchToken } = useBalance({
     address: userAddress,
     token: tokenAddr,
-    watch: true,
+    watch: true
   })
 
   const updateBalances = useCallback(async () => {
@@ -44,5 +44,5 @@ export function useUserBalances(givenAddress?: string) {
       balances,
       updateBalances
     }
-  }, [givenAddress, updateBalances])
+  }, [givenAddress, updateBalances, etherBalance, wethBalance, usdtBalance, tokenBalance])
 }

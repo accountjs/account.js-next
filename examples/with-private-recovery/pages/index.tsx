@@ -14,6 +14,7 @@ import { UserAccount } from '@/components/UserAccount'
 import { LOCAL_CONFIG } from '@/config'
 import { useUserBalances } from '@/hooks/useBalances'
 import { useRouter } from 'next/router'
+import { Button } from '@geist-ui/core'
 
 const generateKeyPair = () => {
   const privateKey = genPrivKey().toString()
@@ -31,20 +32,22 @@ export default function Home() {
   const { address: ownerAddress } = useAccount()
   const router = useRouter()
   const { account: accountAddress } = router.query as { account?: string }
-  console.log('🚀 ~ file: index.tsx:34 ~ Home ~ accountAddress:', accountAddress)
 
   const account = useContractAccount(accountAddress)
-  console.log('🚀 ~ file: index.tsx:37 ~ Home ~ account:', account)
   const serviceClient = useServiceClient()
   const { updateBalances } = useUserBalances(account?.getAddress())
   const [isInitializing, setIsInitializing] = useState(false)
 
   useEffect(() => {
     ;(async () => {
-      console.log(
-        '🚀 ~ file: index.tsx:40 ~ await account?.getGuardians():',
-        await account?.getGuardians().then((xs) => xs.map((x) => x.toString()))
-      )
+      try {
+        console.log(
+          '🚀 ~ file: index.tsx:40 ~ await account?.getGuardians():',
+          await account?.getGuardians().then((xs) => xs.map((x) => x.toString()))
+        )
+      } catch (error) {
+        console.log('🚀 ~ file: index.tsx:48 ~ ; ~ error:', error)
+      }
     })()
   }, [account])
 
@@ -83,10 +86,6 @@ export default function Home() {
       })
 
       const transactionResponse = await serviceClient.sendUserOp(initializeGuardiansOp)
-      console.log(
-        '🚀 ~ file: index.tsx:71 ~ handleSetupGuardians ~ transactionResponse:',
-        transactionResponse
-      )
       await transactionResponse.wait()
       await updateBalances()
     } catch (error) {
@@ -116,7 +115,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>account.js Demo</title>
+        <title>account.js Demo with private recovery</title>
         <meta name="description" content="account.js example" />
         <meta property="og:title" content="account.js example" key="title" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -125,15 +124,15 @@ export default function Home() {
       <main className={cx('p-24 min-h-screen text-xl')}>
         <div className="space-y-6">
           <h1 className={cx('text-5xl font-extrabold capitalize', inter.className)}>
-            account.js demo
+            account.js demo with private recovery
           </h1>
 
           <UserAccount customAccount={accountAddress} />
 
           <div className="flex flex-col gap-2">
-            <button onClick={initializeGuardians} disabled={isInitializing}>
+            <Button onClick={initializeGuardians} disabled={isInitializing}>
               Initialize Guardians
-            </button>
+            </Button>
 
             {!!keyPairList.length && (
               <ul

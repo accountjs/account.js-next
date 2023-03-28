@@ -4,7 +4,6 @@ import { useNetwork, useSigner } from 'wagmi'
 import { useConnectKitContext } from '../ConnectKitProvider'
 
 export function useContractAccount(customAccount?: string) {
-  console.log("🚀 ~ file: useContractAccount.ts:7 ~ useContractAccount ~ customAccount:", customAccount)
   const { chain } = useNetwork()
   const { data: signer } = useSigner()
   const [account, setAccount] = useState<PrivateRecoveryAccount>()
