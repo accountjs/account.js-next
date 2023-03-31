@@ -28,7 +28,7 @@ const generateKeyPair = () => {
   }
 }
 
-const { guardianVerifier, socialRecoveryVerifier, poseidon } = LOCAL_CONFIG
+const { updateGuardianVerifier, socialRecoveryVerifier, poseidon } = LOCAL_CONFIG
 
 export default function Home() {
   const [keyPairList, setKeyPairList] = useState<{ privateKey: string; publicKey: BigInt[] }[]>([])
@@ -81,7 +81,7 @@ export default function Home() {
             guardians as unknown as string[],
             threshold,
             tree.root,
-            guardianVerifier,
+            updateGuardianVerifier,
             socialRecoveryVerifier,
             poseidon
           ]
