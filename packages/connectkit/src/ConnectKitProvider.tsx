@@ -35,8 +35,8 @@ export function ConnectKitProvider({
   customContracts
 }: ConnectKitProviderProps) {
   const chainId = useChainId()
-  const [serviceClient, setServiceClient] = useState<ServiceClient | null>(null)
 
+  const [serviceClient, setServiceClient] = useState<ServiceClient | null>(null)
   useEffect(() => {
     if (!chainId) {
       return
@@ -45,10 +45,10 @@ export function ConnectKitProvider({
     ;(async () => {
       const entryPointAddress =
         customContracts?.entryPointAddress ?? DEPLOYMENTS.entryPoint.networkAddresses[chainId]
-      const client = new ServiceClient({ chainId, bundlerUrl, entryPointAddress })
+      const client = new ServiceClient({ bundlerUrl, entryPointAddress, chainId })
       setServiceClient(client)
     })()
-  }, [])
+  }, [chainId, bundlerUrl, customContracts?.entryPointAddress])
 
   return (
     <ConnectKitContext.Provider value={{ customContracts, serviceClient }}>

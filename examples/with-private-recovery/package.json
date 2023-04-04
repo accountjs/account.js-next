@@ -1,0 +1,39 @@
+{
+  "name": "@accountjs/with-private-recovery",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 5555",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@accountjs/connect": "workspace:*",
+    "@accountjs/sdk": "workspace:*",
+    "@geist-ui/core": "^2.3.8",
+    "circomlibjs": "^0.0.8",
+    "clsx": "^1.2.1",
+    "ethers": "^5.7.2",
+    "formik": "^2.2.9",
+    "maci-crypto": "1.1.1",
+    "next": "13.2.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-use-event-hook": "^0.9.6",
+    "snarkjs": "^0.5.0",
+    "wagmi": "0.12.6"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.7",
+    "@types/react": "^18.0.29",
+    "@types/react-dom": "^18.0.11",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.36.0",
+    "eslint-config-next": "13.2.4",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.2.7",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5"
+  }
+}

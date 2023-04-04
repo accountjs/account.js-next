@@ -70,6 +70,10 @@ export async function getCounterFactualAddress(
   try {
     await entryPointView.callStatic.getSenderAddress(initCode)
   } catch (e: any) {
+    if (!e?.errorArgs?.sender) {
+      throw new Error('Error on get sender address, make sure your account factory is deployed')
+    }
+
     return e.errorArgs.sender
   }
   throw new Error('must handle revert')

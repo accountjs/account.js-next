@@ -1,4 +1,5 @@
 export * from './account'
+export * from './accounts/privateRecoveryAccount'
 export * from './accountFactory'
 
 export * from './types/helpers'

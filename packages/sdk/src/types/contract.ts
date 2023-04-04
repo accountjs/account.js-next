@@ -1,4 +1,4 @@
 export interface ContractConfig {
-  accountFactoryAddress: string
-  entryPointAddress: string
+  accountFactoryAddress?: string
+  entryPointAddress?: string
 }

@@ -1,12 +1,12 @@
-import { Account } from '@accountjs/sdk'
+import { PrivateRecoveryAccount } from '@accountjs/sdk'
 import { useState, useEffect } from 'react'
 import { useNetwork, useSigner } from 'wagmi'
 import { useConnectKitContext } from '../ConnectKitProvider'
 
-export function useContractAccount() {
+export function useContractAccount(customAccount?: string) {
   const { chain } = useNetwork()
   const { data: signer } = useSigner()
-  const [account, setAccount] = useState<Account>()
+  const [account, setAccount] = useState<PrivateRecoveryAccount>()
   const { customContracts } = useConnectKitContext()
 
   useEffect(() => {
@@ -16,17 +16,18 @@ export function useContractAccount() {
       }
 
       try {
-        const account = await Account.create({
+        const account = await PrivateRecoveryAccount.create({
           signer,
+          accountAddress: customAccount,
           customContracts
         })
         setAccount(account)
       } catch (e) {
-        console.log('🚀 ~ file: ConnectButton.tsx:28 ~ ; ~ e:', e)
+        console.log('💣 ~ file: ConnectButton.tsx:28 ~ ; ~ e:', e)
         throw e
       }
     })()
-  }, [signer])
+  }, [signer, chain, customContracts, customAccount])
 
   return account
 }
